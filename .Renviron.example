@@ -1,0 +1,5 @@
+# Copy these lines into a file named .Renviron in the project root.
+# Replace the placeholder with the API key from your Koordinates account.
+KOORDINATES_API_KEY=replace_with_your_own_key
+KOORDINATES_WORKERS=4
+

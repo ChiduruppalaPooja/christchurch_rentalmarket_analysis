@@ -351,20 +351,21 @@ The cleaned datasets will be stored separately from the raw source data.
 
 ## Deliverable 5 — Geographic Data and Dataset Integration
 
-### Status: Planned
+### Status: Implementation prepared; full API run pending
 
-This stage will incorporate geographic information and integrate the relevant datasets.
+This stage connects Airbnb coordinates to Stats NZ Statistical Area 2 2026 codes through the Koordinates Query API, aligns monthly Airbnb snapshots with quarterly tenancy records, and creates database-ready comparison tables.
 
-Planned work includes:
+The implementation includes:
 
-- obtaining geographic information;
-- working with geographic identifiers;
-- API queries where required;
-- validating geographic matches;
-- joining datasets;
-- documenting unmatched observations;
-- establishing appropriate join keys; and
-- creating the integrated analysis dataset/database.
+- `R/00_setup_packages.R` - one-time restoration of the packages recorded in `renv.lock`;
+- `R/05_query_geography.R` - resumable API queries and SA2 enrichment;
+- `R/06_integrate_rental_data.R` - time alignment, aggregation, validation, and joins;
+- `R/07_build_database.R` - optional SQLite database creation; and
+- `Deliverables_Documentations/Week_9_Geographic_Integration.md` - source, schema, join, validation, and run documentation.
+
+The comparison join uses `sa2_code + comparison_quarter`. Airbnb and tenancy data are first reduced to one row per key so that the join does not create a misleading many-to-many result. Unmatched coordinates and keys are saved separately for review.
+
+The processed datasets and SQLite database remain local under `data/processed/` and are not committed to GitHub.
 
 ---
 
