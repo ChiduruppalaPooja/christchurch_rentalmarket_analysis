@@ -38,7 +38,8 @@ map(listings, glimpse)
 #last_review - NA values in some files
 #reviews_per_month - NA values  in some files        
 #license - NA in all files
-#price missing from 2 files completely
+# price column is present in all files, but all values are NA for December 2025,
+# January 2026, and February 2026
 # same file column names in all files
 # at the moment dataset has all of the neighbourhood groups
 
@@ -64,7 +65,7 @@ map(listings_chch, glimpse)
 # add the month year column
 #===================================================
 
-# the new column uses the file name string extracted from the file names and used the notation yyyy-mm under regular expression
+# the new column uses the file name string extracted from the file names and used the notation yyyy_mm under regular expression
 
 listings_chch <- map2(listings_chch, files, ~ mutate(.x, month_year = str_extract(basename(.y), "\\d{4}_\\d{2}") ))
 
@@ -224,7 +225,75 @@ print(listings_chch_combined |> group_by(month_year) |> summarise( total_records
                                                                    non_missing_price = sum(!is.na(last_review)),
                                                                    missing_percentage = mean(is.na(last_review)) * 100))
 
+print(listings_chch_combined |>
+  filter(is.na(last_review)) |>
+  count(number_of_reviews, sort = TRUE))
 
 #^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+# number_of_reviews     n
+# <dbl> <int>
+#  1                 0  2627
+#> 
+#the missing last_review values are structurally explained by listings having no reviews, rather than appearing to be random missing data.
+#^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+
+#====================================================
+# 5. reviews_per_month
+#====================================================
+
+
+print(listings_chch_combined |>
+        filter(is.na(reviews_per_month)) |>
+        count(number_of_reviews, sort =  TRUE))
 
 #^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+# number_of_reviews     n
+# <dbl> <int>
+#  1                 0  2627
+#> 
+#the missing reviews_per_month values are structurally explained by listings having no reviews, rather than appearing to be random missing data.
+#^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+
+#====================================================
+# 6. license
+#====================================================
+
+print(listings_chch_combined |> count(license, sort =  TRUE))
+
+
+
+# ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+#  There is no information in this combined dataset to investigate within license.
+
+#We should not invent or impute license values. We’ll record this as a dataset-wide missing field and decide what to do with it during the cleaning stage
+# ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+
+
+
+
+#####################################################################################
+# Cleaning decisons:
+# 2. price: retain the column and leave missing values as NA. Do not impute. For analyses involving price, exclude records where price is missing.
+# 3. minimum_nights: retain the column and leave the 37 missing values as NA. Do not impute.
+# 4. last_review: retain the column and leave the 2,627 values as NA. Do not replace them.
+# 5. reviews_per_month: retain the column and leave the 2,627 values as NA. Do not impute them as 0.
+# 8. id: retain; unique listing identifier useful for identifying record and checking for duplicates across monthly datasets.
+# 9. host_id: retain; useful for identifying hosts and checking repeatednlistings/host activity across monthly snapshots.
+# 10. neighbourhood_group: remove; all records have already been filtered to Christchurch City, so the column contains no additional information.
+# 11. neighbourhood: retain; relevant for geographic/rental-market analysis.
+# 12. latitude: retain; useful for spatial analysis and mapping.
+# 13. longitude: retain; useful for spatial analysis and mapping.
+# 14. room_type: retain; relevant for understanding different Airbnb accommodation types.
+# 15. number_of_reviews: retain; provides information about listing activity.
+# 16. calculated_host_listings_count: retain; provides information about the number of listings associated with each host.
+# 17. availability_365: retain; relevant to Airbnb availability and supply.
+# 18. number_of_reviews_ltm: retain; provides a measure of recent listing activity over the last 12 months.
+# 19. month_year: retain; identifies the monthly snapshot and is required for analysing changes over time.
+
+# 1. host_name: remove the column; Individual host names aren't relevant to the rental-market comparison.
+# 6. license:  remove because all 28,795 observations were missing, providing no usable information for the analysis.
+# 7. name: remove The listing title isn't relevant to the rental-price/tenancy comparison and is essentially descriptive text.
+#####################################################################################
