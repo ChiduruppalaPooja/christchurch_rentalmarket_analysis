@@ -41,7 +41,6 @@ if (length(missing_files) > 0) {
 }
 
 connection <- dbConnect(RSQLite::SQLite(), database_file)
-on.exit(dbDisconnect(connection), add = TRUE)
 
 for (index in seq_along(table_names)) {
   table_data <- read_csv(table_files[[index]], show_col_types = FALSE)
@@ -94,3 +93,4 @@ write_csv(row_counts, "output/tables/week9_database_row_counts.csv")
 
 print(row_counts)
 message("SQLite database created at: ", database_file)
+dbDisconnect(connection)
