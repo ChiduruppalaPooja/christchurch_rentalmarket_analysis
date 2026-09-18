@@ -1,13 +1,13 @@
 # ============================================================
 # DATA422 - Deliverable 5
-# Add Stats NZ SA2 2026 codes to the cleaned Airbnb data
+# Add Stats NZ SA2 2019 codes to the cleaned Airbnb data
 # ============================================================
 
 library(tidyverse)
 library(jsonlite)
 
-# The course specifies Stats NZ Statistical Area 2 2026.
-koordinates_layer_id <- "123515"
+# Tenancy Services documents that the bond data use SA2-2019 definitions.
+koordinates_layer_id <- "98970"
 koordinates_url <- paste0(
   "https://datafinder.stats.govt.nz/services/query/v1/vector.json"
 )
@@ -33,7 +33,7 @@ if (airbnb_input == "") {
 airbnb_output <- "data/processed/airbnb_christchurch_with_sa2.csv"
 
 lookup_cache <-
-  "data/processed/airbnb_sa2_2026_lookup_cache.csv"
+  "data/processed/airbnb_sa2_2019_lookup_cache.csv"
 
 match_summary_output <-
   "output/tables/week9_api_match_summary.csv"
@@ -170,8 +170,8 @@ query_one_coordinate <- function(coordinate_key, latitude, longitude) {
             coordinate_key = coordinate_key,
             latitude = latitude,
             longitude = longitude,
-            sa2_code = as.character(properties$SA22026_V1_00),
-            sa2_name = as.character(properties$SA22026_V1_00_NAME),
+            sa2_code = as.character(properties$SA22019_V1_00),
+            sa2_name = as.character(properties$SA22019_V1_00_NAME),
             api_status = "matched"
           )
         }

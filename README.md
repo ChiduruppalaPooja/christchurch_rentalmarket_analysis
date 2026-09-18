@@ -351,9 +351,9 @@ The cleaned datasets will be stored separately from the raw source data.
 
 ## Deliverable 5 — Geographic Data and Dataset Integration
 
-### Status: Implementation prepared; full API run pending
+### Status: Complete and validated locally using SA2 2019
 
-This stage connects Airbnb coordinates to Stats NZ Statistical Area 2 2026 codes through the Koordinates Query API, aligns monthly Airbnb snapshots with quarterly tenancy records, and creates database-ready comparison tables.
+This stage connects Airbnb coordinates to Stats NZ Statistical Area 2 2019 codes through the Koordinates Query API, aligns monthly Airbnb snapshots with quarterly tenancy records, and creates database-ready comparison tables. The 2019 geography is used because Tenancy Services documents that the rental bond data use SA2-2019 area definitions.
 
 The implementation includes:
 
@@ -364,6 +364,8 @@ The implementation includes:
 - `Deliverables_Documentations/Week_9_Geographic_Integration.md` - source, schema, join, validation, and run documentation.
 
 The comparison join uses `sa2_code + comparison_quarter`. Airbnb and tenancy data are first reduced to one row per key so that the join does not create a misleading many-to-many result. Unmatched coordinates and keys are saved separately for review.
+
+The validated run assigned an SA2 code to all `28,795` Airbnb rows (`100%` coordinate match). After quarterly aggregation, `408` of `511` Airbnb SA2-quarter keys matched an overall tenancy record (`79.84%`). The resulting SQLite comparison table therefore contains `408` matched rows. Detailed validation results and limitations are recorded in `Deliverables_Documentations/Week_9_Geographic_Integration.md`.
 
 The processed datasets and SQLite database remain local under `data/processed/` and are not committed to GitHub.
 

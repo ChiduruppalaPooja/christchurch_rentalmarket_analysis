@@ -9,12 +9,12 @@ Deliverable 5 connects the cleaned Christchurch Airbnb data to the cleaned Tenan
 
 The Week 9 workflow uses the Koordinates Query API to assign a Stats NZ Statistical Area 2 (SA2) code to each Airbnb coordinate. The two datasets can then be compared using the same geographic code and quarter.
 
-## 2. Official requirements followed
+## 2. Requirements and source constraints followed
 
-The Week 9 LEARN instructions specify:
+The Week 9 implementation follows the LEARN requirements together with the geographic definition documented by Tenancy Services:
 
 - a Koordinates account and API key;
-- the Stats NZ Statistical Area 2 2026 layer;
+- a Stats NZ SA2 layer compatible with the tenancy data's SA2-2019 definitions;
 - a test query before all coordinates are processed;
 - a new area-code column in the Airbnb data;
 - saving the enriched Airbnb data so the API does not need to be queried again;
@@ -30,13 +30,14 @@ SQLite is listed as an optional extension. This repository therefore creates dat
 ### Dataset
 
 - Publisher: Stats NZ
-- Dataset: Statistical Area 2 2026
-- Koordinates layer ID: `123515`
-- Primary code field: `SA22026_V1_00`
-- Name field: `SA22026_V1_00_NAME`
-- Layer page: <https://datafinder.stats.govt.nz/layer/123515-statistical-area-2-2026/>
+- Dataset: Statistical Area 2 2019 (generalised)
+- Koordinates layer ID: `98970`
+- Primary code field: `SA22019_V1_00`
+- Name field: `SA22019_V1_00_NAME`
+- Layer page: <https://datafinder.stats.govt.nz/layer/98970-statistical-area-2-2019-generalised/>
+- Tenancy Services source: <https://www.tenancy.govt.nz/about-tenancy-services/data-and-statistics/rental-bond-data/>
 
-Stats NZ describes SA2 as an output geography intended to represent communities that interact socially and economically. SA2 codes contain six digits. The 2026 layer is the layer explicitly specified on the Week 9 LEARN page.
+Stats NZ describes SA2 as an output geography intended to represent communities that interact socially and economically. SA2 codes contain six digits. Tenancy Services states that its rental bond data use SA2-2019 area definitions, so the 2019 boundary layer is required for a compatible geographic join. Using the latest boundary release merely because it is newer could introduce changed codes or boundaries that do not correspond to the tenancy `Location Id` values.
 
 ### Query API
 
@@ -49,7 +50,7 @@ https://datafinder.stats.govt.nz/services/query/v1/vector.json
 For each unique Airbnb coordinate, the request supplies:
 
 - the user's API key;
-- layer `123515`;
+- layer `98970`;
 - longitude as `x`;
 - latitude as `y`;
 - `max_results=1`;
@@ -146,19 +147,50 @@ The integrated comparison includes:
 
 Bond counts are administrative counts and should be described as a proxy rather than a perfect count of all rental properties.
 
-## 9. Pre-API validation completed
+## 9. Validation completed
 
 The locally available Week 8 files were checked before the geographic API stage:
 
 - Airbnb combined rows: `28,795`
 - Monthly snapshots: `9` (October 2025 to June 2026)
-- Unique latitude/longitude pairs: `3,957`
+- Unique exact latitude/longitude pairs: `3,957`
+- Unique API query keys after rounding coordinates to six decimal places: `3,952`
 - Missing Airbnb prices: `10,667`
 - Cleaned tenancy rows: `26,991`
 - Unique tenancy `SA2 + quarter` keys in the `ALL/ALL` category: `4,865`
 - Christchurch Central (`326600`) overall tenancy rows: `3`, one for each comparison quarter
 
 The Airbnb price missingness is systematic. December 2025, January 2026, and February 2026 have no observed prices. Quarter-level Airbnb medians therefore use only the observed prices available in each quarter. The output includes explicit monthly and quarterly price-coverage tables so this limitation can be presented honestly.
+
+The completed SA2-2019 API and integration run produced:
+
+| Validation measure | Result |
+|---|---:|
+| Airbnb rows with coordinates | `28,795` |
+| Airbnb rows matched to SA2 2019 | `28,795` (`100%`) |
+| Unique matched SA2 areas | `171` |
+| Airbnb SA2-quarter keys | `511` |
+| Matched Airbnb/tenancy SA2-quarter keys | `408` (`79.84%`) |
+| Unmatched Airbnb SA2-quarter keys | `103` |
+| Tenancy-only SA2-quarter keys | `4,457` |
+| Christchurch Central price observations | `719` |
+| Christchurch Central unique Airbnb listings | `154` |
+| Christchurch Central median nightly Airbnb price | `$240` |
+
+The `4,457` tenancy-only keys largely reflect a difference in scope: the source bond file contains SA2 records from throughout New Zealand, while the Airbnb input is restricted to Christchurch. They should not be interpreted as 4,457 failed Christchurch joins. The `103` Airbnb-only keys remain in a separate review table and may reflect absent or suppressed `ALL/ALL` tenancy values for particular place-quarter combinations.
+
+An earlier exploratory run used an SA2 2026 layer and produced only `344` matched Airbnb SA2-quarter keys, with `188` Airbnb keys unmatched. Correcting the workflow to the source-compatible SA2 2019 layer increased the matched count to `408` and reduced unmatched Airbnb keys to `103`. This numerical improvement supports the correction, although the governing reason for using 2019 remains the Tenancy Services metadata.
+
+The optional SQLite build also completed successfully:
+
+| Database table | Rows |
+|---|---:|
+| `dim_geography` | `171` |
+| `fact_airbnb_listing_month` | `28,795` |
+| `fact_airbnb_sa2_quarter` | `511` |
+| `fact_tenancy_detail` | `26,991` |
+| `fact_tenancy_sa2_quarter` | `4,865` |
+| `market_sa2_quarter` | `408` |
 
 ## 10. Validation outputs
 
@@ -180,7 +212,7 @@ These files provide evidence for the presentation and stop unmatched data from d
 
 ## 11. Important limitations
 
-1. The Tenancy Services documentation supplied in Deliverable 4 refers to SA2-2019 definitions, while the Week 9 instructions explicitly specify the SA2 2026 layer. Codes that changed between versions may not match. The unmatched-key tables must be reviewed and reported.
+1. Both sides of the join must use the same geographic vintage. The workflow therefore uses SA2-2019 because that is the area definition documented for the Tenancy Services bond data. Unmatched-key tables are still reviewed because suppression or absent activity can leave valid SA2-quarter keys without a counterpart. Tenancy-only keys must also be interpreted in light of the source file's national scope.
 2. Airbnb prices are advertised nightly prices, while tenancy prices are weekly bond-data measures. Dividing weekly rent by seven supports a simple comparison but does not make the markets identical.
 3. Airbnb records are monthly snapshots and can contain the same listing in several months. Counts are therefore calculated as distinct listing IDs within each quarter.
 4. Bond statistics are subject to Tenancy Services privacy protection, provisional revisions, and source methodology.
@@ -228,7 +260,7 @@ Before running `R/05_query_geography.R`, copy `.Renviron.example` to `.Renviron`
 ### Claudia
 
 - review this document against the actual script outputs;
-- complete the final row counts, match rate, and unmatched-key observations after the full run;
+- independently confirm the final row counts, match rate, and unmatched-key observations;
 - run the scripts from a fresh R session to check reproducibility;
 - record any correction needed in the join logic; and
 - commit and push her reviewed documentation update to the agreed team branch.
