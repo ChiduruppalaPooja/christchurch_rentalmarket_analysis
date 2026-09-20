@@ -1,5 +1,4 @@
 variable,unique_values
-neighbourhood_group,1
 neighbourhood,16
 room_type,4
-snapshot_month,9
+month_year,9
