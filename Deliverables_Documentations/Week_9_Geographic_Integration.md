@@ -245,7 +245,23 @@ source("R/07_build_database.R")
 
 Before running `R/05_query_geography.R`, copy `.Renviron.example` to `.Renviron`, insert the personal Koordinates API key, save the file, and restart RStudio.
 
-## 13. Team responsibilities
+## 13. Documentation Review
+This section records observations from running the Week 9 workflow from a fresh setup, as part of the reproducibility review described in Section 14.
+
+### API key changes
+The original setup steps detailed on this document explained that each member should generate an individual API key in order to run the setup. Now one single API key has been generated for use across the whole team to ensure reproducibility is simple.
+
+### SA2 2019 vs SA2 2026 correction
+Originally, the SA2 2026 layer was chosen to ensure compatibility with up-to-date Airbnb records, and an exploratory run was conducted to observe the join-quality results. Of 532 Airbnb SA2-and-quarter keys, 188 did not match the tenancy record.
+This review prompted another run using the SA2 2019 layer to observe if the output was more accurate. The results showed a decrease in mismatches from 188 to 103, solidifying our decision to switch to the SA2 2019 layer to match with the tenancy datasheet.
+
+### RSQLite "Invalid or closed connection" error - resolved
+When running R/07_build_database.R on a fresh R session, the above error occurred. This was due to an unexpected dbDisconnect(connection) statement in the code which closed the connection before the database could be created. This was moved which fixed this issue.
+
+### Environment issue: "Data_table" install on MacOS 
+Running R/00_setup_packages.R (renv::restore()) failed to install the exact locked version of data.table (1.18.2.1) from source, with a fatal compilation error: 'libintl.h' file not found. This is a missing-header build issue on current macOS/Xcode toolchains (Apple clang 17.0.0, macOS 15.5 SDK), unrelated to the OpenMP warnings that also appeared in the same log (those were explicitly non-fatal). When prompted, renv fell back to installing the latest available data.table (1.18.6.1), which installed cleanly from a pre-built binary with no compilation required. The final pipeline run using this newer version reproduced every one of Sahil's reported figures exactly, suggesting the version difference did not affect any results in this pipeline. This is likely to affect any other team member on a current Mac attempting to install the exact locked version.
+
+## 14. Team responsibilities
 
 ### Sahil
 
