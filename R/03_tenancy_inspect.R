@@ -976,5 +976,5 @@ print(
 # Airbnb and Tenancy analysis.
 write_csv(
   tenancy_project,
-  "data/processed/tenancy_project_oct2025_apr2026.csv"
+  "data/processed/tenancy_christchurch_oct2025_jun2026_clean.csv"
 )
