@@ -3,447 +3,501 @@
 # Deliverable 3: Combine October 2025 - June 2026
 # ============================================================
 
-
-# ============================================================
-# 1. Load packages
-# ============================================================
+rm(list = ls())
 
 library(tidyverse)
 
 
 # ============================================================
-# 2. Define raw files and snapshot dates
+# 1. Load monthly Airbnb datasets
 # ============================================================
 
-airbnb_files <- tibble(
-  file = c(
-    "data/raw/listings_2025_10.csv",
-    "data/raw/listings_2025_11.csv",
-    "data/raw/listings_2025_12.csv",
-    "data/raw/listings_2026_01.csv",
-    "data/raw/listings_2026_02.csv",
-    "data/raw/listings_2026_03.csv",
-    "data/raw/listings_2026_04.csv",
-    "data/raw/listings_2026_05.csv",
-    "data/raw/listings_2026_06.csv"
-  ),
-  snapshot_month = c(
-    "October",
-    "November",
-    "December",
-    "January",
-    "February",
-    "March",
-    "April",
-    "May",
-    "June"
-  ),
-  snapshot_year = c(
-    2025,
-    2025,
-    2025,
-    2026,
-    2026,
-    2026,
-    2026,
-    2026,
-    2026
-  )
+# Define the monthly Airbnb files included in the project.
+# These files cover October 2025 to June 2026.
+files <- c(
+  "data/raw/listings_2025_10.csv",
+  "data/raw/listings_2025_11.csv",
+  "data/raw/listings_2025_12.csv",
+  "data/raw/listings_2026_01.csv",
+  "data/raw/listings_2026_02.csv",
+  "data/raw/listings_2026_03.csv",
+  "data/raw/listings_2026_04.csv",
+  "data/raw/listings_2026_05.csv",
+  "data/raw/listings_2026_06.csv"
+)
+
+# Read all monthly datasets into a list so they can be
+# inspected, filtered, and combined consistently.
+listings <- map(
+  files,
+  ~ read_csv(.x, show_col_types = FALSE)
 )
 
 
-# Check that all nine files exist
-print(file.exists(airbnb_files$file))
+# ============================================================
+# 2. Initial inspection of monthly datasets
+# ============================================================
+
+# Inspect the structure of every monthly dataset before
+# combining them. This checks that the files have compatible
+# columns and identifies differences in data types or missing
+# values between months.
+map(listings, glimpse)
+
+# Observation:
+# The monthly files contain the same variables and can be
+# combined. Several variables contain missing values, including
+# price, last_review, reviews_per_month, minimum_nights, and
+# license. Price is completely missing in December 2025,
+# January 2026, and February 2026.
 
 
 # ============================================================
-# 3. Read, filter Christchurch, and add snapshot information
+# 3. Filter to Christchurch City
 # ============================================================
 
-airbnb_christchurch_list <- map2(
-  airbnb_files$file,
-  seq_len(nrow(airbnb_files)),
-  ~ read_csv(
+# Restrict every monthly dataset to Christchurch City before
+# combining the files. This prevents records from other
+# neighbourhood groups from entering the project dataset.
+listings_chch <- map(
+  listings,
+  ~ filter(.x, neighbourhood_group == "Christchurch City")
+)
+
+# Inspect the filtered datasets to confirm that the filtering
+# produced Christchurch-only records and preserved the expected
+# variables.
+map(listings_chch, glimpse)
+
+# Observation:
+# The filtered datasets contain Christchurch City records only.
+# The column structure remains consistent across the monthly
+# files.
+
+
+# ============================================================
+# 4. Add monthly snapshot identifier
+# ============================================================
+
+# Extract the year and month from each source filename and add
+# it as month_year. This variable identifies which monthly
+# snapshot each listing record came from and is required for
+# analysing changes over time.
+listings_chch <- map2(
+  listings_chch,
+  files,
+  ~ mutate(
     .x,
-    col_types = cols(
-      id = col_character(),
-      host_id = col_character()
+    month_year = str_extract(
+      basename(.y),
+      "\\d{4}_\\d{2}"
     )
-  ) |>
-    filter(neighbourhood_group == "Christchurch City") |>
-    mutate(
-      snapshot_month = airbnb_files$snapshot_month[.y],
-      snapshot_year = airbnb_files$snapshot_year[.y]
-    )
-)
-
-# ============================================================
-# 4. Check Christchurch records for each snapshot
-# ============================================================
-
-snapshot_counts <- map2_dfr(
-  airbnb_christchurch_list,
-  airbnb_files$snapshot_month,
-  ~ tibble(
-    snapshot_month = .y,
-    n_christchurch = nrow(.x)
   )
 )
 
-print(snapshot_counts)
+# Inspect the resulting structure to confirm that month_year
+# has been added correctly to each monthly dataset.
+map(listings_chch, glimpse)
 
-# ============================================================
-# 5. Combine all nine Christchurch datasets
-# ============================================================
-
-airbnb_christchurch_combined <- bind_rows(
-  airbnb_christchurch_list
-)
-
-# ============================================================
-# 6. Inspect the combined dataset
-# ============================================================
-
-print(dim(airbnb_christchurch_combined))
-
-print(glimpse(airbnb_christchurch_combined))
-
-print(names(airbnb_christchurch_combined))
+# Observation:
+# Each Christchurch dataset now contains a month_year field
+# identifying its monthly snapshot.
 
 
 # ============================================================
-# 7. Check number of records by snapshot
+# 5. Combine the monthly datasets
 # ============================================================
 
+# Combine the nine filtered monthly datasets into one dataset
+# for the project analysis.
+listings_chch_combined <- bind_rows(listings_chch)
+
+# Check the dimensions of the combined dataset to confirm
+# the number of records and variables after binding the files.
+print(dim(listings_chch_combined))
+
+# Check the number of Christchurch records contributed by each
+# monthly dataset. This provides a breakdown of the combined
+# row count before validating the total.
 print(
-  airbnb_christchurch_combined |>
-    count(snapshot_year, snapshot_month)
+  map_int(listings_chch, nrow)
 )
 
+# Calculate the sum of rows across all monthly datasets so it
+# can be compared with the number of rows in the combined data.
+print(
+  sum(map_int(listings_chch, nrow))
+)
+
+# Confirm that the combined row count equals the sum of the
+# individual monthly row counts. This verifies that bind_rows()
+# did not unexpectedly lose or add records.
+print(
+  sum(map_int(listings_chch, nrow)) ==
+    nrow(listings_chch_combined)
+)
+
+# Observation:
+# The combined dataset contains 28,795 Christchurch listing
+# records across nine monthly snapshots. The combined row count
+# equals the sum of the individual monthly datasets, confirming
+# that the merge was successful.
+
+
 # ============================================================
-# 9. Check missing values
+# 6. Inspect combined dataset
 # ============================================================
 
-missing_values <- airbnb_christchurch_combined |>
-  summarise(
-    across(
-      everything(),
-      ~ sum(is.na(.))
-    )
-  ) |>
-  pivot_longer(
-    cols = everything(),
-    names_to = "variable",
-    values_to = "missing_count"
-  ) |>
-  mutate(
-    missing_percent =
-      round(
-        missing_count / nrow(airbnb_christchurch_combined) * 100,
-        2
-      )
-  ) |>
-  arrange(desc(missing_count))
+# Inspect the combined dataset structure after merging to
+# confirm that all expected variables are present and to
+# identify their data types.
+glimpse(listings_chch_combined)
 
-print(missing_values)
-
-print(airbnb_christchurch_combined |>
-  group_by(snapshot_year, snapshot_month) |>
-  summarise(
-    total = n(),
-    missing_price = sum(is.na(price)),
-    missing_price_percent = round(
-      mean(is.na(price)) * 100,
-      2
-    )
-  ))
-
-print(airbnb_christchurch_combined |>
-  group_by(snapshot_year, snapshot_month) |>
-  summarise(
-    total = n(),
-    missing_price = sum(is.na(price)),
-    missing_minimum_nights = sum(is.na(minimum_nights)),
-    missing_reviews = sum(is.na(number_of_reviews)),
-    missing_last_review = sum(is.na(last_review)),
-    missing_license = sum(is.na(license))
-  ))
+# Check summary statistics across the combined dataset to
+# identify unusual values and variables requiring further
+# investigation.
+print(
+  summary(listings_chch_combined)
+)
 
 
+# ============================================================
+# 7. Inspect missing values
+# ============================================================
 
-print(airbnb_christchurch_combined |>
-        filter(
-          snapshot_month %in% c("December", "January", "February")
-        ) |>
-        select(
-          snapshot_year,
-          snapshot_month,
-          id,
-          name,
-          room_type,
-          price,
-          minimum_nights,
-          availability_365
-        ) |>
-        head(20))
-print(map_dfr(
-  airbnb_files$file,
-  ~ read_csv(.x, show_col_types = FALSE) |>
+# Count missing values in every column to identify which
+# variables require detailed missingness investigation.
+print(
+  colSums(is.na(listings_chch_combined))
+)
+
+# Observation:
+# Missing values are present in:
+# host_name: 1
+# price: 10,667
+# minimum_nights: 37
+# last_review: 2,627
+# reviews_per_month: 2,627
+# license: 28,795
+#
+# The remaining variables contain no missing values.
+
+
+# ============================================================
+# 8. Inspect host_name
+# ============================================================
+
+# Inspect the single record with a missing host name to
+# determine whether the missing value affects other fields.
+print(
+  listings_chch_combined |>
+    filter(is.na(host_name))
+)
+
+# Observation:
+# Only one host_name value is missing. The remaining listing
+# information is populated. Host names are not required for the
+# rental-market comparison, so the host_name column will be
+# removed rather than attempting to infer the missing value.
+
+
+# ============================================================
+# 9. Inspect price missingness
+# ============================================================
+
+# Examine missing prices by month to distinguish ordinary
+# listing-level missingness from systematic missingness in
+# particular source files.
+print(
+  listings_chch_combined |>
+    group_by(month_year) |>
     summarise(
-      file = .x,
-      rows = n(),
-      price_missing = sum(is.na(price)),
-      price_available = sum(!is.na(price))
+      total_records = n(),
+      missing_price = sum(is.na(price)),
+      non_missing_price = sum(!is.na(price)),
+      missing_percentage = mean(is.na(price)) * 100,
+      .groups = "drop"
     )
-))
+)
+
+# Observation:
+# Price is completely missing for December 2025, January 2026,
+# and February 2026. Other months have approximately 5–8%
+# missingness.
+#
+# The three consecutive months with 100% missing prices indicate
+# a systematic source/data-collection issue rather than ordinary
+# listing-level missingness.
+#
+# Price values will not be imputed because there is insufficient
+# information to determine the correct values. The column is
+# retained and records with missing prices will remain NA.
 
 
-print(airbnb_christchurch_combined |>
-        group_by(snapshot_year, snapshot_month) |>
-        summarise(
-          across(
-            everything(),
-            ~ sum(is.na(.))
-          ),
-          .groups = "drop"
-        ))
+# ============================================================
+# 10. Inspect minimum_nights
+# ============================================================
+
+# Inspect the records with missing minimum_nights to determine
+# whether the missingness is associated with the systematic
+# missing-price period or occurs independently.
+print(
+  listings_chch_combined |>
+    filter(is.na(minimum_nights)),
+  n = Inf,
+  width = Inf
+)
+
+# Observation:
+# There are 37 missing minimum_nights values. Some occur during
+# the period with systematic missing prices, while others occur
+# when other listing information, including price, is available.
+#
+# The missing values will be retained as NA and will not be
+# imputed.
 
 
-print(airbnb_christchurch_combined |>
-        filter(is.na(minimum_nights)) |>
-        select(
-          snapshot_year,
-          snapshot_month,
-          id,
-          name,
-          room_type,
-          price,
-          number_of_reviews,
-          availability_365
-        ))
+# ============================================================
+# 11. Inspect last_review
+# ============================================================
+
+# Examine missing last_review values by month to understand
+# their temporal distribution.
+print(
+  listings_chch_combined |>
+    group_by(month_year) |>
+    summarise(
+      total_records = n(),
+      missing_last_review = sum(is.na(last_review)),
+      non_missing_last_review = sum(!is.na(last_review)),
+      missing_percentage = mean(is.na(last_review)) * 100,
+      .groups = "drop"
+    )
+)
+
+# Check whether missing last_review values are associated with
+# listings that have no reviews.
+print(
+  listings_chch_combined |>
+    filter(is.na(last_review)) |>
+    count(number_of_reviews, sort = TRUE)
+)
+
+# Observation:
+# All 2,627 missing last_review values occur where
+# number_of_reviews is zero. This indicates that the missingness
+# is structurally related to listings having no reviews rather
+# than being unexplained missing data.
+#
+# The missing values are therefore retained as NA.
 
 
-print(airbnb_christchurch_combined |>
-        filter(is.na(minimum_nights)) |>
-        count(snapshot_year, snapshot_month))
+# ============================================================
+# 12. Inspect reviews_per_month
+# ============================================================
+
+# Check whether missing reviews_per_month values are also
+# associated with listings having no reviews.
+print(
+  listings_chch_combined |>
+    filter(is.na(reviews_per_month)) |>
+    count(number_of_reviews, sort = TRUE)
+)
+
+# Observation:
+# All 2,627 missing reviews_per_month values occur where
+# number_of_reviews is zero. These values represent listings
+# without review activity rather than an unknown positive
+# review rate.
+#
+# The missing values are retained as NA rather than being
+# automatically replaced with zero.
 
 
-print(names(airbnb_christchurch_combined))
+# ============================================================
+# 13. Inspect license
+# ============================================================
 
-print(airbnb_christchurch_combined |>
-        summarise(
-          across(
-            everything(),
-            ~ n_distinct(.)
-          )
-        ) |>
-        pivot_longer(
-          cols = everything(),
-          names_to = "variable",
-          values_to = "unique_values"
-        ) |>
-        arrange(desc(unique_values)))
+# Count license values to confirm whether the field contains
+# any usable information in the combined Christchurch dataset.
+print(
+  listings_chch_combined |>
+    count(license, sort = TRUE)
+)
 
-
-print(airbnb_christchurch_combined |>
-        filter(
-          is.na(last_review) | is.na(reviews_per_month)
-        ) |>
-        count(number_of_reviews, sort = TRUE))
+# Observation:
+# License is missing for all 28,795 Christchurch records.
+# Because the field contains no usable information in this
+# dataset, it will be removed during cleaning.
 
 
-# ------------------------------------------------------------
-# Clean the combined Christchurch dataset
-# ------------------------------------------------------------
+# ============================================================
+# 14. Cleaning decisions
+# ============================================================
 
-airbnb_christchurch_clean <- airbnb_christchurch_combined |>
+# Based on the inspection above:
+#
+# - price:
+#   Retain the column and preserve missing values as NA.
+#   Do not impute missing prices. Analyses requiring price
+#   should exclude records where price is unavailable.
+#
+# - minimum_nights:
+#   Retain the column and preserve its 37 missing values as NA.
+#   Do not impute.
+#
+# - last_review:
+#   Retain the column and preserve its 2,627 missing values as
+#   NA. The missingness is associated with listings having no
+#   reviews.
+#
+# - reviews_per_month:
+#   Retain the column and preserve its 2,627 missing values as
+#   NA. Do not automatically replace them with zero.
+#
+# - id:
+#   Retain as the listing identifier. It is useful for identifying
+#   listings and checking repeated observations across monthly
+#   snapshots.
+#
+# - host_id:
+#   Retain because it identifies hosts and can support analysis
+#   of repeated listings or host activity.
+#
+# - neighbourhood:
+#   Retain because it is relevant to geographic and
+#   rental-market analysis.
+#
+# - latitude / longitude:
+#   Retain because they support spatial analysis and mapping.
+#
+# - room_type:
+#   Retain because accommodation type is relevant to rental
+#   market analysis.
+#
+# - number_of_reviews:
+#   Retain because it provides information about listing activity.
+#
+# - calculated_host_listings_count:
+#   Retain because it describes the number of listings associated
+#   with a host.
+#
+# - availability_365:
+#   Retain because it provides information about listing supply
+#   and availability.
+#
+# - number_of_reviews_ltm:
+#   Retain because it provides a measure of recent listing
+#   activity.
+#
+# - month_year:
+#   Retain because it identifies the monthly snapshot and is
+#   required for temporal analysis.
+#
+# - host_name:
+#   Remove because individual host names are not required for
+#   the rental-market comparison.
+#
+# - name:
+#   Remove because the listing title is descriptive text and is
+#   not required for the planned rental-market analysis.
+#
+# - neighbourhood_group:
+#   Remove because all records have already been filtered to
+#   Christchurch City, making the field redundant.
+#
+# - license:
+#   Remove because all 28,795 observations are missing.
+
+
+# ============================================================
+# 15. Apply cleaning decisions
+# ============================================================
+
+# Remove fields that are either irrelevant to the analysis,
+# redundant after Christchurch filtering, or entirely missing.
+airbnb_christchurch_clean <- listings_chch_combined |>
   select(
     -name,
     -host_name,
+    -neighbourhood_group,
     -license
   )
-print(dim(airbnb_christchurch_clean))
-      
-print(names(airbnb_christchurch_clean))
 
 
+# ============================================================
+# 16. Validate cleaned dataset
+# ============================================================
+
+# Confirm the number of rows and columns after removing the
+# four unnecessary variables.
+print(
+  dim(airbnb_christchurch_clean)
+)
+
+# Confirm the final set of variables retained for analysis.
+print(
+  names(airbnb_christchurch_clean)
+)
+
+# Check missing values after cleaning to confirm that no
+# unexpected missing values were introduced or removed.
+print(
+  colSums(is.na(airbnb_christchurch_clean))
+)
+
+# Check completely duplicated rows to ensure that the cleaning
+# process did not introduce duplicate records.
+print(
+  sum(duplicated(airbnb_christchurch_clean))
+)
+
+# Check duplicate listing IDs within each monthly snapshot.
+# The same listing ID is expected to appear across different
+# months, but should not occur more than once within the same
+# monthly snapshot.
+print(
+  airbnb_christchurch_clean |>
+    count(id, month_year, name = "n") |>
+    summarise(
+      duplicate_id_month_combinations = sum(n > 1),
+      maximum_repetitions = max(n)
+    )
+)
+
+# Check how many listing IDs appear in more than one monthly
+# snapshot. Repeated IDs across months are expected because
+# the dataset contains monthly snapshots of the same listings.
+print(
+  airbnb_christchurch_clean |>
+    count(id) |>
+    summarise(
+      listing_ids_repeated_across_months =
+        sum(n > 1)
+    )
+)
+
+# Observation:
+# The cleaned dataset contains 28,795 records and 15 variables.
+# The removed fields are no longer present.
+#
+# Missing values remain only in the variables where missingness
+# was identified during inspection, and no completely duplicated
+# rows are present.
+#
+# Listing IDs are unique within each monthly snapshot.
+# Repeated listing IDs across different months are expected and
+# represent the same listing being observed in multiple monthly
+# snapshots.
+
+
+# ============================================================
+# 17. Save cleaned Airbnb dataset
+# ============================================================
+
+# Save the cleaned Christchurch Airbnb dataset for use in
+# subsequent analysis and reproducible project workflows.
 write_csv(
   airbnb_christchurch_clean,
   "data/processed/airbnb_christchurch_oct2025_jun2026_clean.csv"
-)
-
-# ------------------------------------------------------------
-# Missing-value summary
-# ------------------------------------------------------------
-
-missing_values <- airbnb_christchurch_clean |>
-  summarise(
-    across(
-      everything(),
-      ~ sum(is.na(.))
-    )
-  ) |>
-  pivot_longer(
-    cols = everything(),
-    names_to = "variable",
-    values_to = "missing_count"
-  ) |>
-  mutate(
-    missing_percent = round(
-      missing_count / nrow(airbnb_christchurch_clean) * 100,
-      2
-    )
-  ) |>
-  arrange(desc(missing_count))
-
-print(missing_values)
-
-
-# ------------------------------------------------------------
-# Numeric summary statistics
-# ------------------------------------------------------------
-
-numeric_summary <- airbnb_christchurch_clean |>
-  summarise(
-    across(
-      where(is.numeric),
-      list(
-        count = ~ sum(!is.na(.)),
-        missing = ~ sum(is.na(.)),
-        mean = ~ mean(., na.rm = TRUE),
-        median = ~ median(., na.rm = TRUE),
-        min = ~ min(., na.rm = TRUE),
-        max = ~ max(., na.rm = TRUE),
-        sd = ~ sd(., na.rm = TRUE)
-      )
-    )
-  ) |>
-  pivot_longer(
-    cols = everything(),
-    names_to = c("variable", "statistic"),
-    names_sep = "_(?=[^_]+$)",
-    values_to = "value"
-  ) |>
-  pivot_wider(
-    names_from = statistic,
-    values_from = value
-  )
-
-print(numeric_summary)
-
-
-# ------------------------------------------------------------
-# Categorical summary statistics
-# ------------------------------------------------------------
-
-categorical_summary <- airbnb_christchurch_clean |>
-  select(
-    neighbourhood_group,
-    neighbourhood,
-    room_type,
-    snapshot_month
-  ) |>
-  summarise(
-    across(
-      everything(),
-      ~ n_distinct(.)
-    )
-  ) |>
-  pivot_longer(
-    cols = everything(),
-    names_to = "variable",
-    values_to = "unique_values"
-  )
-
-print(categorical_summary)
-
-
-# ------------------------------------------------------------
-# Frequency summaries for categorical variables
-# ------------------------------------------------------------
-
-room_type_summary <- airbnb_christchurch_clean |>
-  count(room_type, sort = TRUE) |>
-  mutate(
-    percent = round(n / sum(n) * 100, 2)
-  )
-
-neighbourhood_summary <- airbnb_christchurch_clean |>
-  count(neighbourhood, sort = TRUE) |>
-  mutate(
-    percent = round(n / sum(n) * 100, 2)
-  )
-
-snapshot_summary <- airbnb_christchurch_clean |>
-  count(snapshot_year, snapshot_month) |>
-  mutate(
-    percent = round(n / sum(n) * 100, 2)
-  )
-
-print(room_type_summary)
-print(neighbourhood_summary)
-print(snapshot_summary)
-
-
-
-# ------------------------------------------------------------
-# Duplicate checks
-# ------------------------------------------------------------
-
-# Duplicate listing IDs within the same monthly snapshot
-duplicate_ids_by_snapshot <- airbnb_christchurch_clean |>
-  count(snapshot_year, snapshot_month, id) |>
-  filter(n > 1)
-
-print(duplicate_ids_by_snapshot)
-
-# Listing IDs appearing across multiple snapshots
-repeated_listings <- airbnb_christchurch_clean |>
-  count(id) |>
-  filter(n > 1) |>
-  arrange(desc(n))
-
-print(repeated_listings)
-
-# Completely duplicated rows
-duplicate_rows <- airbnb_christchurch_clean |>
-  duplicated() |>
-  sum()
-
-print(duplicate_rows)
-
-
-
-# ------------------------------------------------------------
-# Save summary tables
-# ------------------------------------------------------------
-
-write_csv(
-  missing_values,
-  "output/tables/airbnb_missing_values.csv"
-)
-
-write_csv(
-  numeric_summary,
-  "output/tables/airbnb_numeric_summary.csv"
-)
-
-write_csv(
-  categorical_summary,
-  "output/tables/airbnb_categorical_summary.csv"
-)
-
-write_csv(
-  room_type_summary,
-  "output/tables/airbnb_room_type_summary.csv"
-)
-
-write_csv(
-  neighbourhood_summary,
-  "output/tables/airbnb_neighbourhood_summary.csv"
-)
-
-write_csv(
-  snapshot_summary,
-  "output/tables/airbnb_snapshot_summary.csv"
 )
