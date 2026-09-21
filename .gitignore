@@ -3,7 +3,7 @@
 .Rhistory
 .RData
 .Ruserdata
-.RDataTmp
+.RDataTmp*
 .Renviron
 
 # renv
