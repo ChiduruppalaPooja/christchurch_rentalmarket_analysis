@@ -360,7 +360,8 @@ The implementation includes:
 - `R/00_setup_packages.R` - one-time restoration of the packages recorded in `renv.lock`;
 - `R/05_query_geography.R` - resumable API queries and SA2 enrichment;
 - `R/06_integrate_rental_data.R` - time alignment, aggregation, validation, and joins;
-- `R/07_build_database.R` - optional SQLite database creation; and
+- `R/07_build_database.R` - optional SQLite database creation;
+- `R/08_week9_plots.R` - two presentation charts from the saved Week 9 summaries; and
 - `Deliverables_Documentations/Week_9_Geographic_Integration.md` - source, schema, join, validation, and run documentation.
 
 The comparison join uses `sa2_code + comparison_quarter`. Airbnb and tenancy data are first reduced to one row per key so that the join does not create a misleading many-to-many result. Unmatched coordinates and keys are saved separately for review.
@@ -368,6 +369,16 @@ The comparison join uses `sa2_code + comparison_quarter`. Airbnb and tenancy dat
 The validated run assigned an SA2 code to all `28,795` Airbnb rows (`100%` coordinate match). After quarterly aggregation, `408` of `511` Airbnb SA2-quarter keys matched an overall tenancy record (`79.84%`). The resulting SQLite comparison table therefore contains `408` matched rows. Detailed validation results and limitations are recorded in `Deliverables_Documentations/Week_9_Geographic_Integration.md`.
 
 The processed datasets and SQLite database remain local under `data/processed/` and are not committed to GitHub.
+
+To create the two Week 9 presentation charts after file 06, run:
+
+```r
+source("R/08_week9_plots.R")
+print(price_gap_plot)
+print(rental_count_plot)
+```
+
+PNG and PDF copies are saved in `output/figures/`. The first chart ranks the ten largest median quarterly nightly price gaps. The second compares unique Airbnb listings with active tenancy bonds in April-June 2026 for the ten matched areas with the most Airbnb listings. Figure captions explain missing prices, selection, and the limitations of bond counts.
 
 ---
 

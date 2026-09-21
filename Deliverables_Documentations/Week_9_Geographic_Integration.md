@@ -210,6 +210,15 @@ Small review tables are written to `output/tables/`:
 
 These files provide evidence for the presentation and stop unmatched data from disappearing silently.
 
+### Presentation charts
+
+Run `source("R/08_week9_plots.R")` after file 06. It reads the saved summary tables without querying the API or requiring a key. Two named plot objects remain available in RStudio:
+
+- `print(price_gap_plot)`: the ten largest median quarterly nightly price gaps, ranked using the existing `largest_price_gaps` calculation. Wigram South leads at approximately NZ$288.29 per night. Labels show the number of matched quarters; this chart does not show the distribution of individual listing gaps.
+- `print(rental_count_plot)`: unique Airbnb listings and active tenancy bonds for April-June 2026, restricted to the ten matched SA2 areas with the most Airbnb listings. Counts are not summed across quarters. Bonds are an administrative rental indicator, not a verified distinct-property count.
+
+Both charts are saved as PNG and PDF in `output/figures/`, with matching filenames beginning `week9_price_gaps_top10` and `week9_airbnb_vs_active_bonds_2026q2`. The exact selected rows are saved as `week9_plot_price_gaps_top10.csv` and `week9_plot_counts_top10_2026q2.csv` in `output/tables/`.
+
 ## 11. Important limitations
 
 1. Both sides of the join must use the same geographic vintage. The workflow therefore uses SA2-2019 because that is the area definition documented for the Tenancy Services bond data. Unmatched-key tables are still reviewed because suppression or absent activity can leave valid SA2-quarter keys without a counterpart. Tenancy-only keys must also be interpreted in light of the source file's national scope.
@@ -236,6 +245,9 @@ source("R/03_tenancy_inspect.R")
 # Week 9 core workflow
 source("R/05_query_geography.R")
 source("R/06_integrate_rental_data.R")
+
+# Presentation charts from the saved integration summaries
+source("R/08_week9_plots.R")
 
 # Optional SQLite extension
 source("R/07_build_database.R")
