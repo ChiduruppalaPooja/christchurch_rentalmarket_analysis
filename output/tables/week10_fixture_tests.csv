@@ -1,0 +1,23 @@
+check,status
+Hand example: old pooled median is 100,PASS
+Hand example: equal-listing median is 200,PASS
+One row and one count per listing-quarter,PASS
+Repeating the same monthly price does not overweight a listing,PASS
+Changing monthly prices uses the within-listing median first,PASS
+Unpriced listing counts but does not become a zero price,PASS
+All-missing prices return NA,PASS
+"Conflicting locations are flagged, not guessed",PASS
+Ambiguous listing-quarter is excluded from spatial comparison,PASS
+Missing geography stays explicitly unlocated,PASS
+Duplicate listing-months stop the pipeline,PASS
+Empty identifiers are rejected,PASS
+Negative prices are rejected,PASS
+Infinite prices are rejected,PASS
+Missing required column gives a clear error,PASS
+Quarter conversion handles year and quarter boundaries,PASS
+Missing dates are rejected,PASS
+Hand example: 200 minus 700/7 gives 100 per night,PASS
+Duplicate tenancy join keys are rejected,PASS
+Duplicate Airbnb join keys are rejected,PASS
+Different areas never match,PASS
+Different quarters never match,PASS

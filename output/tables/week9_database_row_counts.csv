@@ -1,7 +1,8 @@
 table_name,row_count
 dim_geography,171
 fact_airbnb_listing_month,28795
-fact_airbnb_sa2_quarter,511
+fact_airbnb_listing_quarter,10355
+fact_airbnb_sa2_quarter,510
 fact_tenancy_detail,26991
 fact_tenancy_sa2_quarter,4865
 market_sa2_quarter,408

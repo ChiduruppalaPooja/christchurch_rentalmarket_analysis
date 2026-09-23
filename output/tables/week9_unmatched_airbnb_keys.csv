@@ -1,104 +1,103 @@
-sa2_code,sa2_name,comparison_quarter,airbnb_listing_snapshots,airbnb_unique_listings,airbnb_price_observations,median_airbnb_nightly_price
-316400,McLeans Island,2025-10-01,2,1,1,59
-316500,Paparua,2025-10-01,3,1,2,83
-316700,Christchurch Airport,2025-10-01,77,27,49,239
-316800,Clearwater,2025-10-01,24,8,15,143
-317000,Harewood,2025-10-01,50,17,31,162
-317100,Brooklands-Spencerville,2025-10-01,3,1,0,NA
-317200,Styx,2025-10-01,5,2,3,220
-318500,Avonhead North,2025-10-01,6,2,4,140.5
-319100,Islington-Hornby Industrial,2025-10-01,4,2,3,379
-320000,Northlands (Christchurch City),2025-10-01,3,1,2,62
-320400,Hornby Central,2025-10-01,6,2,4,202.5
-321600,Waitikiri,2025-10-01,3,1,2,179
-322300,Sockburn South,2025-10-01,1,1,0,NA
-323700,Queenspark,2025-10-01,9,3,6,63
-324200,Riccarton Central,2025-10-01,9,3,6,208.5
-324700,Broken Run,2025-10-01,9,4,6,166.5
-324900,Hagley Park,2025-10-01,38,13,25,167
-325500,Tower Junction,2025-10-01,20,7,13,149
-326000,Waimairi Beach,2025-10-01,34,12,20,108
-326200,Otakaro-Avon River Corridor,2025-10-01,6,3,2,43
-326400,Addington North,2025-10-01,56,20,36,136
-329800,Bexley,2025-10-01,6,2,2,145.5
-330000,Westmorland,2025-10-01,45,16,23,113
-330700,Bromley North,2025-10-01,3,1,2,177
-331000,Woolston West,2025-10-01,9,3,2,123
-331200,Huntsbury,2025-10-01,57,20,37,104
-331500,Woolston South,2025-10-01,3,1,2,240
-331600,Port Hills,2025-10-01,8,3,6,131
-331800,Brookhaven-Ferrymead,2025-10-01,6,2,4,161.5
-332200,Governors Bay,2025-10-01,40,16,28,147.5
-332300,Inlets other Christchurch City,2025-10-01,12,4,8,257
-332400,Clifton Hill,2025-10-01,74,26,46,128
-332600,Inlet Port Lyttelton,2025-10-01,3,1,2,135
-332800,Teddington,2025-10-01,19,7,12,155
-332900,Diamond Harbour,2025-10-01,128,44,83,177
-333100,Banks Peninsula South,2025-10-01,110,39,71,141
-333200,Eastern Bays-Banks Peninsula,2025-10-01,72,26,47,200
-333300,Akaroa Harbour,2025-10-01,243,85,157,229
-333400,Inlet Akaroa Harbour,2025-10-01,69,23,44,207.5
-333500,Akaroa,2025-10-01,301,105,186,251.5
-363800,Oceanic Canterbury Region,2025-10-01,6,2,3,111
-316400,McLeans Island,2026-01-01,2,1,0,NA
-316500,Paparua,2026-01-01,3,1,1,149
-316700,Christchurch Airport,2026-01-01,76,26,24,208
-317200,Styx,2026-01-01,5,2,2,883
-317600,Regents Park,2026-01-01,9,3,3,138
-319100,Islington-Hornby Industrial,2026-01-01,3,1,1,598
-320000,Northlands (Christchurch City),2026-01-01,3,1,1,80
-320400,Hornby Central,2026-01-01,7,3,3,214
-324700,Broken Run,2026-01-01,10,4,4,264.5
-324900,Hagley Park,2026-01-01,38,13,13,220
-325500,Tower Junction,2026-01-01,21,7,7,240
-326200,Otakaro-Avon River Corridor,2026-01-01,6,2,2,82
-330700,Bromley North,2026-01-01,2,1,0,NA
-331000,Woolston West,2026-01-01,9,3,1,146
-331500,Woolston South,2026-01-01,3,1,1,524
-331600,Port Hills,2026-01-01,9,3,2,197
-332200,Governors Bay,2026-01-01,34,12,11,174
-332300,Inlets other Christchurch City,2026-01-01,10,4,2,607
-332600,Inlet Port Lyttelton,2026-01-01,6,3,1,155
-332800,Teddington,2026-01-01,25,9,9,210
-332900,Diamond Harbour,2026-01-01,124,45,39,217
-333100,Banks Peninsula South,2026-01-01,113,39,37,172
-333200,Eastern Bays-Banks Peninsula,2026-01-01,75,27,26,277.5
-333300,Akaroa Harbour,2026-01-01,249,88,62,283
-333400,Inlet Akaroa Harbour,2026-01-01,71,24,23,339
-333500,Akaroa,2026-01-01,308,108,91,335
-363800,Oceanic Canterbury Region,2026-01-01,7,3,2,531
-316400,McLeans Island,2026-04-01,8,4,8,126
-316500,Paparua,2026-04-01,3,1,3,149
-316700,Christchurch Airport,2026-04-01,72,25,72,180
-317000,Harewood,2026-04-01,45,17,45,181
-317100,Brooklands-Spencerville,2026-04-01,3,1,3,109
-317200,Styx,2026-04-01,6,2,6,885
-317500,Russley,2026-04-01,32,14,32,206
-318500,Avonhead North,2026-04-01,12,4,12,177
-319100,Islington-Hornby Industrial,2026-04-01,1,1,1,443
-320000,Northlands (Christchurch City),2026-04-01,3,1,3,97
-320400,Hornby Central,2026-04-01,8,3,8,214
-321600,Waitikiri,2026-04-01,3,1,3,249
-322000,Upper Riccarton,2026-04-01,16,6,16,196
-323500,Middleton,2026-04-01,17,6,17,72
-324200,Riccarton Central,2026-04-01,11,4,11,221
-324700,Broken Run,2026-04-01,12,4,12,299
-324900,Hagley Park,2026-04-01,39,14,38,202
-325500,Tower Junction,2026-04-01,21,7,21,177
-326000,Waimairi Beach,2026-04-01,28,10,27,145
-326200,Otakaro-Avon River Corridor,2026-04-01,6,2,6,77.5
-328800,Lancaster Park,2026-04-01,10,4,10,410.5
-331500,Woolston South,2026-04-01,4,2,4,392
-331600,Port Hills,2026-04-01,9,3,8,143
-331800,Brookhaven-Ferrymead,2026-04-01,13,5,12,252
-332200,Governors Bay,2026-04-01,30,11,28,173.5
-332300,Inlets other Christchurch City,2026-04-01,6,2,6,454.5
-332600,Inlet Port Lyttelton,2026-04-01,7,3,3,155
-332800,Teddington,2026-04-01,24,8,24,198.5
-332900,Diamond Harbour,2026-04-01,139,49,128,217
-333100,Banks Peninsula South,2026-04-01,112,38,105,189
-333200,Eastern Bays-Banks Peninsula,2026-04-01,92,32,80,277.5
-333300,Akaroa Harbour,2026-04-01,255,88,200,286
-333400,Inlet Akaroa Harbour,2026-04-01,72,25,65,237
-333500,Akaroa,2026-04-01,312,106,273,313
-363800,Oceanic Canterbury Region,2026-04-01,6,2,6,531
+sa2_code,sa2_name,comparison_quarter,airbnb_listing_snapshots,airbnb_unique_listings,airbnb_price_observations,airbnb_priced_listings,median_airbnb_nightly_price
+316400,McLeans Island,2025-10-01,2,1,1,1,59
+316500,Paparua,2025-10-01,3,1,2,1,83
+316700,Christchurch Airport,2025-10-01,77,27,49,27,231.5
+316800,Clearwater,2025-10-01,24,8,15,8,159.25
+317000,Harewood,2025-10-01,50,17,31,17,155
+317100,Brooklands-Spencerville,2025-10-01,3,1,0,0,NA
+317200,Styx,2025-10-01,5,2,3,2,610
+318500,Avonhead North,2025-10-01,6,2,4,2,139.75
+319100,Islington-Hornby Industrial,2025-10-01,4,2,3,2,309
+320000,Northlands (Christchurch City),2025-10-01,3,1,2,1,62
+320400,Hornby Central,2025-10-01,6,2,4,2,208
+321600,Waitikiri,2025-10-01,3,1,2,1,179
+322300,Sockburn South,2025-10-01,1,1,0,0,NA
+323700,Queenspark,2025-10-01,9,3,6,3,63
+324200,Riccarton Central,2025-10-01,9,3,6,3,208.5
+324700,Broken Run,2025-10-01,9,4,6,4,166.5
+324900,Hagley Park,2025-10-01,38,13,25,13,150.5
+325500,Tower Junction,2025-10-01,20,7,13,7,149
+326000,Waimairi Beach,2025-10-01,34,12,20,11,108
+326200,Otakaro-Avon River Corridor,2025-10-01,6,3,2,1,43
+326400,Addington North,2025-10-01,56,20,36,18,139
+329800,Bexley,2025-10-01,6,2,2,1,145.5
+330000,Westmorland,2025-10-01,45,16,23,13,114
+330700,Bromley North,2025-10-01,3,1,2,1,177
+331000,Woolston West,2025-10-01,9,3,2,1,123
+331200,Huntsbury,2025-10-01,57,20,37,20,104.5
+331500,Woolston South,2025-10-01,3,1,2,1,240
+331600,Port Hills,2025-10-01,8,3,6,3,131
+331800,Brookhaven-Ferrymead,2025-10-01,6,2,4,2,159.75
+332200,Governors Bay,2025-10-01,40,16,28,16,166.5
+332300,Inlets other Christchurch City,2025-10-01,12,4,8,4,275
+332400,Clifton Hill,2025-10-01,74,26,46,24,132.75
+332600,Inlet Port Lyttelton,2025-10-01,3,1,2,1,135
+332800,Teddington,2025-10-01,19,7,12,6,157
+332900,Diamond Harbour,2025-10-01,128,44,83,42,168.25
+333100,Banks Peninsula South,2025-10-01,110,39,71,37,136
+333200,Eastern Bays-Banks Peninsula,2025-10-01,72,26,47,25,210
+333300,Akaroa Harbour,2025-10-01,243,85,157,83,230
+333400,Inlet Akaroa Harbour,2025-10-01,69,23,44,23,207
+333500,Akaroa,2025-10-01,301,105,186,99,260
+363800,Oceanic Canterbury Region,2025-10-01,6,2,3,2,321.5
+316400,McLeans Island,2026-01-01,2,1,0,0,NA
+316500,Paparua,2026-01-01,3,1,1,1,149
+316700,Christchurch Airport,2026-01-01,76,26,24,24,208
+317200,Styx,2026-01-01,5,2,2,2,883
+317600,Regents Park,2026-01-01,9,3,3,3,138
+319100,Islington-Hornby Industrial,2026-01-01,3,1,1,1,598
+320000,Northlands (Christchurch City),2026-01-01,3,1,1,1,80
+320400,Hornby Central,2026-01-01,7,3,3,3,214
+324700,Broken Run,2026-01-01,10,4,4,4,264.5
+324900,Hagley Park,2026-01-01,38,13,13,13,220
+325500,Tower Junction,2026-01-01,21,7,7,7,240
+326200,Otakaro-Avon River Corridor,2026-01-01,6,2,2,2,82
+330700,Bromley North,2026-01-01,2,1,0,0,NA
+331000,Woolston West,2026-01-01,9,3,1,1,146
+331500,Woolston South,2026-01-01,3,1,1,1,524
+331600,Port Hills,2026-01-01,9,3,2,2,197
+332200,Governors Bay,2026-01-01,34,12,11,11,174
+332300,Inlets other Christchurch City,2026-01-01,10,4,2,2,607
+332600,Inlet Port Lyttelton,2026-01-01,6,3,1,1,155
+332800,Teddington,2026-01-01,25,9,9,9,210
+332900,Diamond Harbour,2026-01-01,124,45,39,39,217
+333100,Banks Peninsula South,2026-01-01,113,39,37,37,172
+333200,Eastern Bays-Banks Peninsula,2026-01-01,75,27,26,26,277.5
+333300,Akaroa Harbour,2026-01-01,249,88,62,62,283
+333400,Inlet Akaroa Harbour,2026-01-01,71,24,23,23,339
+333500,Akaroa,2026-01-01,308,108,91,91,335
+363800,Oceanic Canterbury Region,2026-01-01,7,3,2,2,531
+316400,McLeans Island,2026-04-01,8,4,8,4,126
+316500,Paparua,2026-04-01,3,1,3,1,149
+316700,Christchurch Airport,2026-04-01,72,25,72,25,180
+317000,Harewood,2026-04-01,45,17,45,17,187
+317100,Brooklands-Spencerville,2026-04-01,3,1,3,1,109
+317200,Styx,2026-04-01,6,2,6,2,885.5
+317500,Russley,2026-04-01,32,14,32,14,199
+318500,Avonhead North,2026-04-01,12,4,12,4,177
+320000,Northlands (Christchurch City),2026-04-01,3,1,3,1,97
+320400,Hornby Central,2026-04-01,8,3,8,3,214
+321600,Waitikiri,2026-04-01,3,1,3,1,249
+322000,Upper Riccarton,2026-04-01,16,6,16,6,185
+323500,Middleton,2026-04-01,17,6,17,6,85.5
+324200,Riccarton Central,2026-04-01,11,4,11,4,158
+324700,Broken Run,2026-04-01,12,4,12,4,299
+324900,Hagley Park,2026-04-01,39,14,38,13,192
+325500,Tower Junction,2026-04-01,21,7,21,7,177
+326000,Waimairi Beach,2026-04-01,28,10,27,9,145
+326200,Otakaro-Avon River Corridor,2026-04-01,6,2,6,2,77.5
+328800,Lancaster Park,2026-04-01,10,4,10,4,285
+331500,Woolston South,2026-04-01,4,2,4,2,245.5
+331600,Port Hills,2026-04-01,9,3,8,3,137
+331800,Brookhaven-Ferrymead,2026-04-01,13,5,12,5,252
+332200,Governors Bay,2026-04-01,30,11,28,11,172
+332300,Inlets other Christchurch City,2026-04-01,6,2,6,2,456
+332600,Inlet Port Lyttelton,2026-04-01,7,3,3,2,175.5
+332800,Teddington,2026-04-01,24,8,24,8,197.5
+332900,Diamond Harbour,2026-04-01,139,49,128,44,217
+333100,Banks Peninsula South,2026-04-01,112,38,105,38,181.5
+333200,Eastern Bays-Banks Peninsula,2026-04-01,92,32,80,30,287.5
+333300,Akaroa Harbour,2026-04-01,254,87,199,72,283
+333400,Inlet Akaroa Harbour,2026-04-01,72,25,65,23,237
+333500,Akaroa,2026-04-01,310,105,271,96,307.25
+363800,Oceanic Canterbury Region,2026-04-01,6,2,6,2,536.5

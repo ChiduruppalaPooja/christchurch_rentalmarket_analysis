@@ -1,5 +1,7 @@
 # Deliverable 5 - Geographic Data and Dataset Integration
 
+Updated 23 September 2026: the Week 10 correction changes price weighting and geographic eligibility. Output filenames retain their `week9_` prefix. The current method and high-level reasons are detailed in [Week 10 Design Principles](Week_10_Design_Principles.md) and [Week 10 Change Log](Week_10_Change_Log.md). The documentation-review notes in section 13 describe the earlier Week 9 run.
+
 ## 1. Purpose
 
 Deliverable 5 connects the cleaned Christchurch Airbnb data to the cleaned Tenancy Services bond data. The two sources do not initially share a usable key:
@@ -66,7 +68,7 @@ The API key is read from `KOORDINATES_API_KEY` in a local `.Renviron` file. `.Re
 
 The script:
 
-1. checks that the API key and cleaned Airbnb input exist;
+1. checks the cleaned Airbnb input and requires an API key only for uncached requests;
 2. extracts unique latitude/longitude pairs;
 3. tests one query before starting the full run;
 4. queries unique coordinates in batches of 100;
@@ -101,6 +103,7 @@ An Airbnb file contains many listings per SA2 and month. The tenancy file contai
 
 The integration script first creates:
 
+- one intermediate row per listing and quarter, with that listing's median available monthly price;
 - one Airbnb summary row per `sa2_code + comparison_quarter`; and
 - one tenancy summary row per `sa2_code + comparison_quarter` using the source's `Dwelling Type = ALL` and `Number Of Beds = ALL` record.
 
@@ -112,6 +115,8 @@ sa2_code + comparison_quarter
 
 An inner join is appropriate for the comparison table because price differences can only be calculated when both sources have a record for the same place and quarter. Separate anti-join outputs retain all Airbnb-only and tenancy-only keys for quality review.
 
+The area price is the median of the eligible listing-level medians, giving each listing one contribution. Listing-quarters with more than one observed SA2 are preserved and flagged, but excluded from spatial prices and counts until reviewed. Original monthly records are not deleted. This is separate from duplicate-ID/month validation.
+
 ## 7. Database-ready structure
 
 The core workflow creates the following tables under `data/processed/database_ready/`:
@@ -120,6 +125,7 @@ The core workflow creates the following tables under `data/processed/database_re
 |---|---|---|
 | `dim_geography` | one row per SA2 | SA2 code and name lookup |
 | `fact_airbnb_listing_month` | one listing snapshot per month | Enriched detailed Airbnb records |
+| `fact_airbnb_listing_quarter` | one listing per quarter | Representative price and explicit geography eligibility |
 | `fact_airbnb_sa2_quarter` | one row per SA2 and quarter | Airbnb price and listing summaries |
 | `fact_tenancy_detail` | one source category per SA2 and quarter | Cleaned tenancy detail |
 | `fact_tenancy_sa2_quarter` | one row per SA2 and quarter | Overall tenancy measures from `ALL/ALL` |
@@ -137,7 +143,7 @@ The database and detailed processed CSV files are local outputs and are excluded
 
 The integrated comparison includes:
 
-- median Airbnb nightly price;
+- equal-listing median Airbnb nightly price;
 - equivalent Airbnb weekly price (`nightly price * 7`);
 - median tenancy weekly rent;
 - equivalent tenancy nightly rent (`weekly rent / 7`);
@@ -169,17 +175,18 @@ The completed SA2-2019 API and integration run produced:
 | Airbnb rows with coordinates | `28,795` |
 | Airbnb rows matched to SA2 2019 | `28,795` (`100%`) |
 | Unique matched SA2 areas | `171` |
-| Airbnb SA2-quarter keys | `511` |
-| Matched Airbnb/tenancy SA2-quarter keys | `408` (`79.84%`) |
-| Unmatched Airbnb SA2-quarter keys | `103` |
+| Eligible Airbnb SA2-quarter keys | `510` |
+| Matched Airbnb/tenancy SA2-quarter keys | `408` (`80%`) |
+| Unmatched Airbnb SA2-quarter keys | `102` |
 | Tenancy-only SA2-quarter keys | `4,457` |
-| Christchurch Central price observations | `719` |
-| Christchurch Central unique Airbnb listings | `154` |
-| Christchurch Central median nightly Airbnb price | `$240` |
+| Christchurch Central eligible monthly price observations | `695` |
+| Christchurch Central unique eligible Airbnb listings | `152` |
+| Christchurch Central eligible listings with a price | `151` |
+| Christchurch Central equal-listing median nightly Airbnb price | `$237` |
 
-The `4,457` tenancy-only keys largely reflect a difference in scope: the source bond file contains SA2 records from throughout New Zealand, while the Airbnb input is restricted to Christchurch. They should not be interpreted as 4,457 failed Christchurch joins. The `103` Airbnb-only keys remain in a separate review table and may reflect absent or suppressed `ALL/ALL` tenancy values for particular place-quarter combinations.
+The `4,457` tenancy-only keys largely reflect a difference in scope: the source bond file contains SA2 records from throughout New Zealand, while the Airbnb input is restricted to Christchurch. They should not be interpreted as 4,457 failed Christchurch joins. The `102` Airbnb-only keys remain in a separate review table and may reflect absent or suppressed `ALL/ALL` tenancy values for particular place-quarter combinations.
 
-An earlier exploratory run used an SA2 2026 layer and produced only `344` matched Airbnb SA2-quarter keys, with `188` Airbnb keys unmatched. Correcting the workflow to the source-compatible SA2 2019 layer increased the matched count to `408` and reduced unmatched Airbnb keys to `103`. This numerical improvement supports the correction, although the governing reason for using 2019 remains the Tenancy Services metadata.
+An earlier exploratory run used an SA2 2026 layer and produced only `344` matched Airbnb SA2-quarter keys, with `188` Airbnb keys unmatched. The initial SA2 2019 correction increased the matched count to `408` and reduced unmatched Airbnb keys to `103`. Week 10's separate eligibility correction reduced eligible Airbnb-only keys to `102`; this was not another boundary-vintage change. The governing reason for using 2019 remains the Tenancy Services metadata.
 
 The optional SQLite build also completed successfully:
 
@@ -187,7 +194,8 @@ The optional SQLite build also completed successfully:
 |---|---:|
 | `dim_geography` | `171` |
 | `fact_airbnb_listing_month` | `28,795` |
-| `fact_airbnb_sa2_quarter` | `511` |
+| `fact_airbnb_listing_quarter` | `10,355` |
+| `fact_airbnb_sa2_quarter` | `510` |
 | `fact_tenancy_detail` | `26,991` |
 | `fact_tenancy_sa2_quarter` | `4,865` |
 | `market_sa2_quarter` | `408` |
@@ -214,7 +222,7 @@ These files provide evidence for the presentation and stop unmatched data from d
 
 Run `source("R/08_week9_plots.R")` after file 06. It reads the saved summary tables without querying the API or requiring a key. Two named plot objects remain available in RStudio:
 
-- `print(price_gap_plot)`: the ten largest median quarterly nightly price gaps, ranked using the existing `largest_price_gaps` calculation. Wigram South leads at approximately NZ$288.29 per night. Labels show the number of matched quarters; this chart does not show the distribution of individual listing gaps.
+- `print(price_gap_plot)`: the ten largest median quarterly nightly price gaps, using equal-listing area medians. Wigram South leads at approximately NZ$288.29 per night. Labels show the number of quarters with a usable gap; this chart does not show the distribution of individual listing gaps.
 - `print(rental_count_plot)`: unique Airbnb listings and active tenancy bonds for April-June 2026, restricted to the ten matched SA2 areas with the most Airbnb listings. Counts are not summed across quarters. Bonds are an administrative rental indicator, not a verified distinct-property count.
 
 Both charts are saved as PNG and PDF in `output/figures/`, with matching filenames beginning `week9_price_gaps_top10` and `week9_airbnb_vs_active_bonds_2026q2`. The exact selected rows are saved as `week9_plot_price_gaps_top10.csv` and `week9_plot_counts_top10_2026q2.csv` in `output/tables/`.
@@ -223,7 +231,7 @@ Both charts are saved as PNG and PDF in `output/figures/`, with matching filenam
 
 1. Both sides of the join must use the same geographic vintage. The workflow therefore uses SA2-2019 because that is the area definition documented for the Tenancy Services bond data. Unmatched-key tables are still reviewed because suppression or absent activity can leave valid SA2-quarter keys without a counterpart. Tenancy-only keys must also be interpreted in light of the source file's national scope.
 2. Airbnb prices are advertised nightly prices, while tenancy prices are weekly bond-data measures. Dividing weekly rent by seven supports a simple comparison but does not make the markets identical.
-3. Airbnb records are monthly snapshots and can contain the same listing in several months. Counts are therefore calculated as distinct listing IDs within each quarter.
+3. Airbnb records are monthly snapshots. Both price aggregation and counts now use listing-quarter records: one median per listing, then a median across listings. The whole-period Central headline similarly uses one median per eligible listing. Ambiguous listing-quarters are excluded from spatial comparisons and audited; all monthly source records remain preserved.
 4. Bond statistics are subject to Tenancy Services privacy protection, provisional revisions, and source methodology.
 5. An API failure and a true no-polygon result are recorded separately in the lookup cache.
 6. December 2025 to February 2026 have systematic Airbnb price missingness. Quarterly medians do not represent three complete months in those quarters.

@@ -5,9 +5,11 @@
 
 library(tidyverse)
 library(jsonlite)
+source("R/pipeline_config.R")
+source("R/helpers/integration_helpers.R")
 
 # Tenancy Services documents that the bond data use SA2-2019 definitions.
-koordinates_layer_id <- "98970"
+koordinates_layer_id <- pipeline_config$sa2_layer
 koordinates_url <- paste0(
   "https://datafinder.stats.govt.nz/services/query/v1/vector.json"
 )
@@ -41,18 +43,6 @@ match_summary_output <-
 unmatched_output <-
   "output/tables/week9_unmatched_coordinates.csv"
 
-api_key <- Sys.getenv("KOORDINATES_API_KEY")
-
-if (api_key == "") {
-  stop(
-    paste(
-      "KOORDINATES_API_KEY is not set.",
-      "Create a project .Renviron file, add",
-      "KOORDINATES_API_KEY=your_key_here, then restart RStudio."
-    )
-  )
-}
-
 if (!file.exists(airbnb_input)) {
   stop(
     paste0(
@@ -83,6 +73,11 @@ if (length(missing_columns) > 0) {
     "Airbnb input is missing: ",
     paste(missing_columns, collapse = ", ")
   )
+}
+if (nrow(problems(airbnb))) stop("Airbnb input has CSV parsing problems.")
+if (any(!is.na(airbnb$latitude) & (!is.finite(airbnb$latitude) | abs(airbnb$latitude) > 90)) ||
+    any(!is.na(airbnb$longitude) & (!is.finite(airbnb$longitude) | abs(airbnb$longitude) > 180))) {
+  stop("Airbnb coordinates contain invalid latitude/longitude values.")
 }
 
 # The API is queried once per unique coordinate rather than once per row.
@@ -130,8 +125,15 @@ cache <- if (file.exists(lookup_cache)) {
 
 coordinates_to_query <- coordinates |>
   anti_join(cache, by = "coordinate_key")
+assert_unique_keys(cache, "coordinate_key", "SA2 cache")
+
+if (nrow(coordinates_to_query) > 0 && Sys.getenv("KOORDINATES_API_KEY") == "") {
+  stop("Uncached coordinates need KOORDINATES_API_KEY in your local .Renviron. Restart RStudio after setting it.")
+}
 
 query_one_coordinate <- function(coordinate_key, latitude, longitude) {
+  # Keep the credential out of Global Environment and routine warning messages.
+  api_key <- Sys.getenv("KOORDINATES_API_KEY")
   query_url <- paste0(
     koordinates_url,
     "?key=", utils::URLencode(api_key, reserved = TRUE),
@@ -147,10 +149,10 @@ query_one_coordinate <- function(coordinate_key, latitude, longitude) {
   for (attempt in seq_len(3)) {
     result <- tryCatch(
       {
-        response <- jsonlite::fromJSON(
+        response <- suppressWarnings(jsonlite::fromJSON(
           query_url,
           simplifyVector = FALSE
-        )
+        ))
 
         features <- response$vectorQuery$layers[[koordinates_layer_id]]$features
 
@@ -286,7 +288,8 @@ airbnb_with_sa2 <- airbnb |>
   left_join(
     cache |>
       select(coordinate_key, sa2_code, sa2_name),
-    by = "coordinate_key"
+    by = "coordinate_key",
+    relationship = "many-to-one"
   ) |>
   select(-coordinate_key)
 

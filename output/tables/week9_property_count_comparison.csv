@@ -114,14 +114,14 @@ sa2_code,sa2_name,comparison_quarter,airbnb_unique_listings,total_bonds,active_b
 329900,Waltham,2025-10-01,13,60,636
 330100,Woolston North,2025-10-01,8,24,333
 330200,New Brighton,2025-10-01,45,48,471
-330300,Cashmere West,2025-10-01,21,9,141
+330300,Cashmere West,2025-10-01,20,9,141
 330400,Bromley South,2025-10-01,1,12,141
 330500,Ensors,2025-10-01,6,12,246
 330600,Beckenham,2025-10-01,14,9,141
 330800,St Martins,2025-10-01,8,18,150
 330900,Opawa,2025-10-01,1,6,108
 331100,Woolston East,2025-10-01,7,21,339
-331300,Cashmere East,2025-10-01,29,9,153
+331300,Cashmere East,2025-10-01,28,9,153
 331400,Hillsborough (Christchurch City),2025-10-01,14,15,156
 331700,South New Brighton,2025-10-01,22,24,213
 331900,Heathcote Valley,2025-10-01,11,9,123
@@ -206,7 +206,7 @@ sa2_code,sa2_name,comparison_quarter,airbnb_unique_listings,total_bonds,active_b
 325000,Hillmorton,2026-01-01,12,21,306
 325100,Parklands,2026-01-01,3,12,252
 325200,Riccarton East,2026-01-01,26,33,291
-325300,Edgeware,2026-01-01,49,162,1419
+325300,Edgeware,2026-01-01,48,162,1419
 325400,Aidanfield,2026-01-01,7,15,117
 325600,Burwood,2026-01-01,6,9,201
 325700,Christchurch Central-West,2026-01-01,132,45,444
@@ -230,7 +230,7 @@ sa2_code,sa2_name,comparison_quarter,airbnb_unique_listings,total_bonds,active_b
 327600,Spreydon North,2026-01-01,20,78,726
 327700,Hoon Hay East,2026-01-01,6,21,234
 327800,Avonside,2026-01-01,6,9,228
-327900,Linwood West,2026-01-01,51,159,1692
+327900,Linwood West,2026-01-01,50,159,1692
 328000,Halswell South,2026-01-01,6,15,150
 328100,Sydenham Central,2026-01-01,14,12,111
 328200,Spreydon South,2026-01-01,3,45,345
@@ -333,11 +333,11 @@ sa2_code,sa2_name,comparison_quarter,airbnb_unique_listings,total_bonds,active_b
 323700,Queenspark,2026-04-01,5,9,135
 323800,St Albans North,2026-04-01,32,63,573
 323900,St Albans West,2026-04-01,44,60,711
-324000,Travis Wetlands,2026-04-01,6,12,198
+324000,Travis Wetlands,2026-04-01,5,12,198
 324100,Wigram East,2026-04-01,6,9,63
 324300,Oaklands West,2026-04-01,9,9,147
 324400,Riccarton South,2026-04-01,42,78,969
-324500,Halswell West,2026-04-01,13,24,363
+324500,Halswell West,2026-04-01,12,24,363
 324600,Shirley East,2026-04-01,4,9,189
 324800,St Albans East,2026-04-01,54,78,981
 325000,Hillmorton,2026-04-01,10,12,297
@@ -345,20 +345,20 @@ sa2_code,sa2_name,comparison_quarter,airbnb_unique_listings,total_bonds,active_b
 325200,Riccarton East,2026-04-01,26,24,279
 325300,Edgeware,2026-04-01,47,108,1425
 325400,Aidanfield,2026-04-01,7,12,117
-325600,Burwood,2026-04-01,6,15,210
-325700,Christchurch Central-West,2026-04-01,134,54,441
-325800,Christchurch Central-North,2026-04-01,202,105,1131
+325600,Burwood,2026-04-01,5,15,210
+325700,Christchurch Central-West,2026-04-01,131,54,441
+325800,Christchurch Central-North,2026-04-01,199,105,1131
 325900,Richmond North (Christchurch City),2026-04-01,21,21,342
 326100,Addington West,2026-04-01,39,75,861
 326300,Oaklands East,2026-04-01,9,6,246
 326400,Addington North,2026-04-01,19,9,69
 326500,Dallington,2026-04-01,10,18,291
-326600,Christchurch Central,2026-04-01,147,6,42
+326600,Christchurch Central,2026-04-01,123,6,42
 326700,Hoon Hay West,2026-04-01,7,6,171
 326800,Richmond South (Christchurch City),2026-04-01,26,63,810
 326900,Spreydon West,2026-04-01,18,66,552
-327000,Christchurch Central-East,2026-04-01,376,141,987
-327100,Christchurch Central-South,2026-04-01,294,42,276
+327000,Christchurch Central-East,2026-04-01,352,141,987
+327100,Christchurch Central-South,2026-04-01,290,42,276
 327200,North Beach,2026-04-01,21,21,288
 327300,Halswell North,2026-04-01,15,21,180
 327400,Addington East,2026-04-01,18,69,873
@@ -366,9 +366,9 @@ sa2_code,sa2_name,comparison_quarter,airbnb_unique_listings,total_bonds,active_b
 327600,Spreydon North,2026-04-01,19,72,738
 327700,Hoon Hay East,2026-04-01,7,18,228
 327800,Avonside,2026-04-01,6,12,198
-327900,Linwood West,2026-04-01,54,144,1692
+327900,Linwood West,2026-04-01,53,144,1692
 328000,Halswell South,2026-04-01,8,9,150
-328100,Sydenham Central,2026-04-01,23,9,105
+328100,Sydenham Central,2026-04-01,20,9,105
 328200,Spreydon South,2026-04-01,4,51,357
 328300,Rawhiti,2026-04-01,5,15,276
 328400,Wainoni,2026-04-01,7,12,243

@@ -3,8 +3,6 @@
 # Deliverable 3: Combine October 2025 - June 2026
 # ============================================================
 
-rm(list = ls())
-
 library(tidyverse)
 
 
@@ -25,6 +23,11 @@ files <- c(
   "data/raw/listings_2026_05.csv",
   "data/raw/listings_2026_06.csv"
 )
+
+missing_inputs <- files[!file.exists(files)]
+if (length(missing_inputs)) stop("Missing monthly input: ", paste(missing_inputs, collapse = ", "))
+dir.create("data/processed", recursive = TRUE, showWarnings = FALSE)
+dir.create("output/tables", recursive = TRUE, showWarnings = FALSE)
 
 # Read all monthly datasets into a list so they can be
 # inspected, filtered, and combined consistently.

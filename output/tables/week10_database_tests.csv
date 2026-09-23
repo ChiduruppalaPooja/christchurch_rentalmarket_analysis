@@ -1,0 +1,5 @@
+check,status
+SQLite identifiers stored as text,PASS
+Incorrect SQL/R result rejected,PASS
+Failed rebuild rolls back to previous tables,PASS
+Missing input leaves database unchanged,PASS

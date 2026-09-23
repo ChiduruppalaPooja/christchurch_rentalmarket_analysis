@@ -4,15 +4,20 @@
 # ============================================================
 
 library(tidyverse)
+source("R/pipeline_config.R")
 
-summary_dir <- "output/tables"
-figure_dir <- "output/figures"
-chart_quarter <- as.Date("2026-04-01")
+summary_dir <- pipeline_config$summary_dir
+figure_dir <- pipeline_config$figure_dir
+chart_quarter <- pipeline_config$chart_quarter
+study_quarters <- length(seq(pipeline_config$study_start, pipeline_config$study_end, by = "3 months"))
+study_label <- paste(format(pipeline_config$study_start, "%B %Y"), format(pipeline_config$study_end, "%B %Y"), sep = "-")
+quarter_end <- seq(chart_quarter, by = "3 months", length.out = 2)[[2]] - 1
+quarter_label <- paste0(format(chart_quarter, "%B"), "-", format(quarter_end, "%B %Y"))
 
 chart_inputs <- file.path(
   summary_dir,
   c("week9_largest_price_gaps.csv", "week9_property_count_comparison.csv",
-    "week9_api_match_summary.csv")
+    "week9_api_match_summary.csv", "week10_method_metadata.csv")
 )
 
 if (!all(file.exists(chart_inputs))) {
@@ -20,8 +25,12 @@ if (!all(file.exists(chart_inputs))) {
 }
 
 api_summary <- read_csv(chart_inputs[[3]], show_col_types = FALSE)
-if (nrow(api_summary) != 1L || !identical(as.character(api_summary$layer_id), "98970")) {
+if (nrow(api_summary) != 1L || !identical(as.character(api_summary$layer_id), pipeline_config$sa2_layer)) {
   stop("These charts require the SA2 2019 results from layer 98970. Re-run files 05 and 06.")
+}
+method_metadata <- read_csv(chart_inputs[[4]], show_col_types = FALSE)
+if (nrow(method_metadata) != 1L || method_metadata$method != "equal_listing_quarter_v1") {
+  stop("Run the corrected file 06 before plotting: equal listing weighting is required.")
 }
 
 gap_results <- read_csv(
@@ -44,14 +53,14 @@ if (anyDuplicated(gap_results$sa2_code) ||
 price_gap_chart_data <- gap_results |>
   filter(is.finite(median_nightly_price_gap)) |>
   arrange(desc(median_nightly_price_gap), sa2_code) |>
-  slice_head(n = 10)
+  slice_head(n = pipeline_config$chart_top_n)
 
 # Plot 2 uses one quarter, avoiding repeat counts across quarters.
 # Only matched areas are eligible; select the ten with most Airbnb listings.
 rental_count_chart_data <- count_results |>
   filter(comparison_quarter == chart_quarter) |>
   arrange(desc(airbnb_unique_listings), sa2_code) |>
-  slice_head(n = 10)
+  slice_head(n = pipeline_config$chart_top_n)
 
 if (nrow(price_gap_chart_data) == 0L || nrow(rental_count_chart_data) == 0L) {
   stop("No records available for one or both charts.")
@@ -93,7 +102,7 @@ gap_plot_data <- price_gap_chart_data |>
   mutate(
     area = factor(sa2_name, levels = rev(sa2_name)),
     label = paste0(scales::dollar(median_nightly_price_gap, accuracy = 0.01),
-                   "  (", quarters_compared, "/3 quarters)")
+                   "  (", quarters_compared, "/", study_quarters, " quarters)")
   )
 
 price_gap_plot <- ggplot(gap_plot_data, aes(x = median_nightly_price_gap, y = area)) +
@@ -105,10 +114,12 @@ price_gap_plot <- ggplot(gap_plot_data, aes(x = median_nightly_price_gap, y = ar
                      expand = expansion(mult = c(0, 0.38))) +
   labs(
     title = "Largest short-term vs long-term rental price gaps",
-    subtitle = "Top 10 matched SA2 areas | October 2025-June 2026 | SA2 2019\nMedian of quarterly gaps: Airbnb median nightly price - (tenancy median weekly rent / 7)",
+    subtitle = paste0("Top ", pipeline_config$chart_top_n, " matched SA2 areas | ", study_label,
+                      " | SA2 2019\nMedian of quarterly gaps: equal-listing Airbnb nightly median - (tenancy weekly median / 7)"),
     x = "Median quarterly gap (NZ$ per night)",
     caption = paste(
-      "Labels show the gap and matched quarters. Airbnb prices are missing for Dec 2025-Feb 2026; medians use available prices.",
+      "Each listing contributes one within-quarter median. Ambiguous listing-quarter area assignments are excluded and recorded.",
+      "Labels show quarters with a usable gap. Airbnb prices are missing for Dec 2025-Feb 2026; only available prices are used.",
       "Advertised Airbnb prices and bond rents describe different markets; the gap is not a profit or causal estimate.",
       "Sources: Inside Airbnb; MBIE Tenancy Services; Stats NZ. Based on the saved Week 9 integration results.", sep = "\n"
     )
@@ -131,10 +142,11 @@ rental_count_plot <- ggplot(count_plot_data, aes(x = count, y = area, fill = ser
                      expand = expansion(mult = c(0, 0.14))) +
   labs(
     title = "Airbnb listings and active tenancy bonds by area",
-    subtitle = "April-June 2026 | Top 10 matched areas by unique Airbnb listing count | SA2 2019",
+    subtitle = paste0(quarter_label, " | Top ", pipeline_config$chart_top_n,
+                      " matched areas by eligible unique Airbnb listing count | SA2 2019"),
     x = "Count in the selected quarter",
     caption = paste(
-      "Airbnb counts are distinct listing IDs observed during the quarter. Bond counts use the ALL dwelling types / ALL bedrooms row.",
+      "Airbnb counts are distinct IDs with an unambiguous area in the quarter. Bonds use the ALL dwelling types / ALL bedrooms row.",
       "Active bonds are an administrative rental indicator, not a verified count of distinct properties. Counts are not added across quarters.",
       "Sources: Inside Airbnb; MBIE Tenancy Services; Stats NZ. Only matched areas are shown; this is a selected subset of Christchurch.", sep = "\n"
     )

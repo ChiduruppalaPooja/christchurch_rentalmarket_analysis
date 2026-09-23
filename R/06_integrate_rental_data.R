@@ -1,17 +1,17 @@
 # ============================================================
 # DATA422 - Deliverable 5
-# Build database-ready Airbnb and tenancy tables and join them
+# Inputs: enriched monthly Airbnb and cleaned quarterly tenancy CSVs.
+# Outputs: database-ready tables, comparison summaries and quality audits.
 # ============================================================
 
 library(tidyverse)
+source("R/pipeline_config.R")
+source("R/helpers/integration_helpers.R")
 
-airbnb_file <- "data/processed/airbnb_christchurch_with_sa2.csv"
-
-tenancy_file <-
-  "data/processed/tenancy_christchurch_oct2025_jun2026_clean.csv"
-
-database_ready_dir <- "data/processed/database_ready"
-summary_dir <- "output/tables"
+airbnb_file <- pipeline_config$airbnb_input
+tenancy_file <- pipeline_config$tenancy_input
+database_ready_dir <- pipeline_config$table_dir
+summary_dir <- pipeline_config$summary_dir
 
 required_files <- c(airbnb_file, tenancy_file)
 missing_files <- required_files[!file.exists(required_files)]
@@ -28,13 +28,15 @@ if (length(missing_files) > 0) {
 
 dir.create(database_ready_dir, recursive = TRUE, showWarnings = FALSE)
 dir.create(summary_dir, recursive = TRUE, showWarnings = FALSE)
+dir.create(pipeline_config$quality_dir, recursive = TRUE, showWarnings = FALSE)
 
 airbnb <- read_csv(
   airbnb_file,
   col_types = cols(
     id = col_character(),
     host_id = col_character(),
-    sa2_code = col_character()
+    sa2_code = col_character(),
+    price = col_double()
   ),
   show_col_types = FALSE
 )
@@ -42,10 +44,15 @@ airbnb <- read_csv(
 tenancy <- read_csv(
   tenancy_file,
   col_types = cols(
-    `Location Id` = col_character()
+    `Location Id` = col_character(),
+    TimeFrame = col_date(),
+    `Median Rent` = col_double(),
+    `Active Bonds` = col_double()
   ),
   show_col_types = FALSE
 )
+if (nrow(problems(airbnb)) || nrow(problems(tenancy))) stop("Input CSV parsing problems must be resolved first.")
+if (!nrow(airbnb) || !nrow(tenancy)) stop("Input tables must not be empty.")
 
 required_airbnb_columns <- c(
   "id", "latitude", "longitude", "price", "sa2_code", "sa2_name"
@@ -110,7 +117,7 @@ if ("month_year" %in% names(airbnb)) {
   )
 }
 
-if (any(is.na(airbnb$snapshot_month_number))) {
+if (any(is.na(airbnb$snapshot_month_number)) || any(!airbnb$snapshot_month_number %in% 1:12)) {
   stop("Some Airbnb month values could not be converted to month numbers.")
 }
 
@@ -123,19 +130,18 @@ fact_airbnb_listing_month <- airbnb |>
         snapshot_month_number
       )
     ),
-    quarter_start_month =
-      ((snapshot_month_number - 1L) %/% 3L) * 3L + 1L,
-    comparison_quarter = as.Date(
-      sprintf(
-        "%04d-%02d-01",
-        as.integer(snapshot_year),
-        quarter_start_month
-      )
-    ),
+    comparison_quarter = quarter_start(snapshot_date),
     price = as.numeric(price),
     sa2_code = as.character(sa2_code)
   ) |>
-  select(-snapshot_month_number, -quarter_start_month)
+  select(-snapshot_month_number)
+
+assert_unique_keys(fact_airbnb_listing_month, c("id", "snapshot_date"), "Airbnb monthly data")
+assert_nonnegative(fact_airbnb_listing_month$price, "Airbnb price")
+if (any(fact_airbnb_listing_month$snapshot_date < pipeline_config$study_start |
+        fact_airbnb_listing_month$snapshot_date > pipeline_config$study_end)) {
+  stop("Airbnb dates fall outside the configured study period.")
+}
 
 airbnb_price_coverage_by_month <- fact_airbnb_listing_month |>
   group_by(snapshot_date, snapshot_year, snapshot_month) |>
@@ -177,21 +183,36 @@ dim_geography <- fact_airbnb_listing_month |>
   filter(!is.na(sa2_code)) |>
   distinct(sa2_code, sa2_name) |>
   arrange(sa2_code)
+assert_unique_keys(dim_geography, "sa2_code", "SA2 name lookup")
 
-fact_airbnb_sa2_quarter <- fact_airbnb_listing_month |>
+fact_airbnb_listing_quarter <- build_listing_quarters(fact_airbnb_listing_month)
+fact_airbnb_sa2_quarter <- summarise_listing_quarters(fact_airbnb_listing_quarter)
+
+geography_review_summary <- fact_airbnb_listing_quarter |>
+  group_by(geography_status) |>
+  summarise(listing_quarters = n(), monthly_rows = sum(monthly_snapshots), .groups = "drop")
+geography_conflicts <- fact_airbnb_listing_month |>
+  semi_join(filter(fact_airbnb_listing_quarter, geography_status != "single_sa2"),
+            by = c("id", "comparison_quarter"))
+
+# Record weighting and geographic exclusion effects separately for review.
+pooled_prices <- fact_airbnb_listing_month |>
   filter(!is.na(sa2_code)) |>
-  group_by(sa2_code, sa2_name, comparison_quarter) |>
-  summarise(
-    airbnb_listing_snapshots = n(),
-    airbnb_unique_listings = n_distinct(id),
-    airbnb_price_observations = sum(!is.na(price)),
-    median_airbnb_nightly_price = if_else(
-      airbnb_price_observations > 0,
-      median(price, na.rm = TRUE),
-      NA_real_
-    ),
-    .groups = "drop"
-  )
+  group_by(sa2_code, comparison_quarter) |>
+  summarise(previous_pooled_median = median_or_na(price), .groups = "drop")
+equal_listing_prices <- fact_airbnb_listing_month |>
+  filter(!is.na(sa2_code)) |>
+  group_by(id, sa2_code, comparison_quarter) |>
+  summarise(listing_price = median_or_na(price), .groups = "drop") |>
+  group_by(sa2_code, comparison_quarter) |>
+  summarise(equal_listing_before_geography_review = median_or_na(listing_price), .groups = "drop")
+median_method_comparison <- pooled_prices |>
+  left_join(equal_listing_prices, by = c("sa2_code", "comparison_quarter"), relationship = "one-to-one") |>
+  left_join(select(fact_airbnb_sa2_quarter, sa2_code, comparison_quarter,
+                   final_median = median_airbnb_nightly_price),
+            by = c("sa2_code", "comparison_quarter"), relationship = "one-to-one") |>
+  mutate(weighting_change = equal_listing_before_geography_review - previous_pooled_median,
+         geography_review_change = final_median - equal_listing_before_geography_review)
 
 fact_tenancy_detail <- tenancy |>
   transmute(
@@ -229,6 +250,17 @@ fact_tenancy_sa2_quarter <- fact_tenancy_detail |>
     log_sd_weekly_rent
   )
 
+assert_unique_keys(fact_tenancy_detail,
+                   c("sa2_code", "comparison_quarter", "dwelling_type", "number_of_beds"),
+                   "Tenancy category detail", allow_missing = TRUE)
+assert_nonnegative(fact_tenancy_sa2_quarter$median_weekly_rent, "Tenancy median weekly rent")
+assert_nonnegative(fact_tenancy_sa2_quarter$active_bonds, "Active bonds")
+if (anyNA(fact_tenancy_sa2_quarter$comparison_quarter) ||
+    any(fact_tenancy_sa2_quarter$comparison_quarter != quarter_start(fact_tenancy_sa2_quarter$comparison_quarter)) ||
+    any(!fact_tenancy_sa2_quarter$comparison_quarter %in% seq(pipeline_config$study_start, pipeline_config$study_end, by = "3 months"))) {
+  stop("Tenancy dates must be quarter starts within the study period.")
+}
+
 if (nrow(fact_tenancy_sa2_quarter) == 0) {
   stop("No ALL/ALL aggregate tenancy records were found.")
 }
@@ -246,17 +278,7 @@ if (nrow(duplicate_tenancy_keys) > 0) {
 
 join_keys <- c("sa2_code", "comparison_quarter")
 
-market_sa2_quarter <- fact_airbnb_sa2_quarter |>
-  inner_join(fact_tenancy_sa2_quarter, by = join_keys) |>
-  mutate(
-    equivalent_airbnb_weekly_price = median_airbnb_nightly_price * 7,
-    equivalent_tenancy_nightly_price = median_weekly_rent / 7,
-    nightly_price_gap =
-      median_airbnb_nightly_price - equivalent_tenancy_nightly_price,
-    weekly_price_gap =
-      equivalent_airbnb_weekly_price - median_weekly_rent
-  ) |>
-  arrange(comparison_quarter, sa2_code)
+market_sa2_quarter <- join_market_tables(fact_airbnb_sa2_quarter, fact_tenancy_sa2_quarter)
 
 unmatched_airbnb_keys <- fact_airbnb_sa2_quarter |>
   anti_join(fact_tenancy_sa2_quarter, by = join_keys) |>
@@ -283,28 +305,34 @@ join_quality <- tibble(
   )
 )
 
-christchurch_central <- fact_airbnb_listing_month |>
-  filter(sa2_code == "326600") |>
+central_eligible_months <- fact_airbnb_listing_month |>
+  semi_join(filter(fact_airbnb_listing_quarter, geography_status == "single_sa2",
+                   sa2_code == pipeline_config$central_sa2),
+            by = c("id", "comparison_quarter"))
+central_listing_prices <- central_eligible_months |>
+  group_by(id) |>
+  summarise(listing_median_nightly_price = median_or_na(price),
+            price_observations = sum(!is.na(price)), .groups = "drop")
+christchurch_central <- central_listing_prices |>
   summarise(
-    sa2_code = "326600",
-    sa2_name = dplyr::first(
-      sa2_name[!is.na(sa2_name)],
-      default = NA_character_
-    ),
-    price_observations = sum(!is.na(price)),
-    unique_listings = n_distinct(id),
-    median_airbnb_nightly_price = median(price, na.rm = TRUE)
+    sa2_code = pipeline_config$central_sa2,
+    sa2_name = "Christchurch Central",
+    price_observations = sum(price_observations),
+    unique_listings = n(),
+    priced_listings = sum(!is.na(listing_median_nightly_price)),
+    median_airbnb_nightly_price = median_or_na(listing_median_nightly_price)
   )
 
 largest_price_gaps <- market_sa2_quarter |>
   group_by(sa2_code, sa2_name) |>
   summarise(
-    quarters_compared = n(),
+    matched_quarters = n(),
+    quarters_compared = sum(!is.na(nightly_price_gap)),
     median_airbnb_nightly_price =
-      median(median_airbnb_nightly_price, na.rm = TRUE),
+      median_or_na(median_airbnb_nightly_price),
     median_tenancy_nightly_price =
-      median(equivalent_tenancy_nightly_price, na.rm = TRUE),
-    median_nightly_price_gap = median(nightly_price_gap, na.rm = TRUE),
+      median_or_na(equivalent_tenancy_nightly_price),
+    median_nightly_price_gap = median_or_na(nightly_price_gap),
     .groups = "drop"
   ) |>
   arrange(desc(median_nightly_price_gap))
@@ -323,11 +351,25 @@ property_count_comparison <- market_sa2_quarter |>
 database_tables <- list(
   dim_geography = dim_geography,
   fact_airbnb_listing_month = fact_airbnb_listing_month,
+  fact_airbnb_listing_quarter = fact_airbnb_listing_quarter,
   fact_airbnb_sa2_quarter = fact_airbnb_sa2_quarter,
   fact_tenancy_detail = fact_tenancy_detail,
   fact_tenancy_sa2_quarter = fact_tenancy_sa2_quarter,
   market_sa2_quarter = market_sa2_quarter
 )
+stopifnot(identical(names(database_tables), pipeline_config$database_tables))
+
+write_csv(geography_conflicts, file.path(pipeline_config$quality_dir, "listing_quarter_geography_review.csv"))
+write_csv(central_listing_prices, file.path(pipeline_config$quality_dir, "central_listing_prices.csv"))
+write_csv(geography_review_summary, file.path(summary_dir, "week10_geography_review_summary.csv"))
+write_csv(median_method_comparison, file.path(summary_dir, "week10_median_method_comparison.csv"))
+write_csv(tibble(
+  method = "equal_listing_quarter_v1",
+  geography_policy = "exclude_ambiguous_listing_quarter",
+  sa2_layer = pipeline_config$sa2_layer,
+  airbnb_md5 = unname(tools::md5sum(airbnb_file)),
+  tenancy_md5 = unname(tools::md5sum(tenancy_file))
+), file.path(summary_dir, "week10_method_metadata.csv"))
 
 purrr::iwalk(
   database_tables,
@@ -370,5 +412,6 @@ write_csv(
 print(join_quality)
 print(airbnb_price_coverage_by_month)
 print(christchurch_central)
+print(geography_review_summary)
 print(slice_head(largest_price_gaps, n = 10))
 message("Saved database-ready tables to: ", database_ready_dir)

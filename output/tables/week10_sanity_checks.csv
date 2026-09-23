@@ -1,0 +1,12 @@
+check,status,detail
+Unique listing-month keys,PASS,Each listing appears at most once in each monthly snapshot.
+Unique listing-quarter keys,PASS,"One row per listing and quarter, including flagged records."
+All monthly rows accounted for,PASS,Quarterly snapshot counts sum to the preserved monthly row count.
+Independent listing medians,PASS,Base R recomputation agrees for every listing-quarter.
+Ambiguous geography not assigned,PASS,Only listing-quarters with exactly one observed area receive an area code.
+Independent area medians and counts,PASS,One listing-level median per area-quarter agrees with an independent base R calculation.
+Join keys exactly match intersection,PASS,No many-to-many expansion or missing matched key.
+Nightly price-gap arithmetic,PASS,Airbnb nightly median minus tenancy weekly median divided by seven.
+Input fingerprints unchanged,PASS,Saved results refer to the current prepared source files.
+Central hand-check row available,PASS,One real row can be demonstrated separately from the automated full-table check.
+Independent Central period median,PASS,"Whole-period Central result uses one median per eligible listing, not a median of quarterly medians."

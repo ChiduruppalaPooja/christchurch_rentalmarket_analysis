@@ -366,7 +366,7 @@ The implementation includes:
 
 The comparison join uses `sa2_code + comparison_quarter`. Airbnb and tenancy data are first reduced to one row per key so that the join does not create a misleading many-to-many result. Unmatched coordinates and keys are saved separately for review.
 
-The validated run assigned an SA2 code to all `28,795` Airbnb rows (`100%` coordinate match). After quarterly aggregation, `408` of `511` Airbnb SA2-quarter keys matched an overall tenancy record (`79.84%`). The resulting SQLite comparison table therefore contains `408` matched rows. Detailed validation results and limitations are recorded in `Deliverables_Documentations/Week_9_Geographic_Integration.md`.
+The validated run assigned an SA2 code to all `28,795` monthly Airbnb rows (`100%` coordinate match). The Week 10 correction gives each eligible listing one representative price per quarter and excludes ambiguous listing-quarter area assignments from spatial comparisons. There are now `510` eligible Airbnb SA2-quarter keys, `408` matched rows (`80%`) and `102` Airbnb-only keys. See the Week 10 design document for the current price definition and review policy.
 
 The processed datasets and SQLite database remain local under `data/processed/` and are not committed to GitHub.
 
@@ -382,21 +382,27 @@ PNG and PDF copies are saved in `output/figures/`. The first chart ranks the ten
 
 ---
 
-## Deliverable 6 — Refactoring and Analysis
+## Deliverable 6 — Coding Practices, Sanity Checks and Design
 
-### Status: Planned
+### Status: Implemented and tested locally; team review and lab presentation pending
 
-This stage will improve the organisation and maintainability of the project code and introduce the required analysis.
+The coordinator's repeated-listing concern is addressed: each listing contributes one within-quarter median to its area's median, rather than each monthly row having equal weight. Monthly history is preserved. Ambiguous locations are flagged separately, and missing prices are not imputed.
 
-Planned work includes:
+Open the project `.Rproj` file and run from the RStudio Console:
 
-- refactoring repeated operations;
-- creating reusable functions where appropriate;
-- improving script organisation;
-- validating the end-to-end workflow;
-- producing analytical summaries;
-- generating tables; and
-- generating visualisations.
+```r
+source("R/10_run_week10.R")
+View(sanity_checks)
+View(sanity_example)
+```
+
+This runs 22 hand-checkable tests, rebuilds the corrected tables, SQLite and charts, and independently validates saved results. It needs the two prepared local inputs but no network or API credential. New shared parameters are in `R/pipeline_config.R`; pure calculation/assertion functions are in `R/helpers/integration_helpers.R`.
+
+- [Nine-section design principles](Deliverables_Documentations/Week_10_Design_Principles.md): inputs, outputs, pipeline steps, lecture-aligned coding strategies, limitations and the explicit OpenAI Codex disclosure.
+- [High-level change log](Deliverables_Documentations/Week_10_Change_Log.md): changes, reasons, before/after results and requirement mapping.
+- [Run and presentation guide](Deliverables_Documentations/Week_10_Run_And_Present.md): exact commands, objects to show, speaking notes and remaining team tasks.
+
+The current Central whole-period median is NZ$237 across 151 priced eligible listings. The price-gap chart still ranks Wigram South first at approximately NZ$288.29 per night. Both calculations use the documented equal-listing method and exclusions; missing prices in December-February remain a limitation. Small output tables and presentation charts are retained in Git as review evidence; large data, the database and credentials stay local.
 
 ---
 
