@@ -6,13 +6,42 @@
 
 library(tidyverse)
 
+# ------------------------------------------------------------
+# File paths
+# ------------------------------------------------------------
+
+input_file <- "data/raw/listings.csv"
+output_file <- "data/processed/airbnb_christchurch_2026_06_clean.csv"
+
+required_columns <- c(
+  "id",
+  "neighbourhood_group",
+  "price",
+  "minimum_nights",
+  "last_review",
+  "reviews_per_month",
+  "license",
+  "room_type",
+  "neighbourhood",
+  "latitude",
+  "longitude"
+)
+
+missing_columns <- setdiff(required_columns, names(airbnb_raw))
+
+if (length(missing_columns) > 0) {
+  stop(
+    "Required columns are missing: ",
+    paste(missing_columns, collapse = ", ")
+  )
+}
 
 # ------------------------------------------------------------
 # 1. Load raw Airbnb data
 # ------------------------------------------------------------
 
 airbnb_raw <- read_csv(
-  "data/raw/listings.csv",
+  input_file,
   show_col_types = FALSE
 )
 
@@ -30,8 +59,13 @@ airbnb_chch <- airbnb_raw |>
     neighbourhood_group == "Christchurch City"
   )
 
-# Check filtered dataset
-print(dim(airbnb_chch))
+if (nrow(airbnb_chch) == 0) {
+  stop("No Christchurch City listings were found.")
+}
+
+if (any(airbnb_chch$neighbourhood_group != "Christchurch City")) {
+  stop("Filtering error: non-Christchurch records remain.")
+}
 
 # Confirm that only Christchurch City remains
 print(table(airbnb_chch$neighbourhood_group))
@@ -50,13 +84,12 @@ airbnb_chch <- airbnb_chch |>
     snapshot_year = 2026
   )
 
-# Check snapshot information
-print(unique(airbnb_chch$snapshot_month))
-print(unique(airbnb_chch$snapshot_year))
-
-# Check dimensions after adding the two columns
-print(dim(airbnb_chch))
-
+if (
+  any(airbnb_chch$snapshot_month != "June") ||
+  any(airbnb_chch$snapshot_year != 2026)
+) {
+  stop("Snapshot metadata is incorrect for the June 2026 dataset.")
+}
 
 # ------------------------------------------------------------
 # 4. Inspect missing values
@@ -75,8 +108,11 @@ missing_values <- airbnb_chch |>
     values_to = "missing_count"
   )
 
-print(missing_values, n = Inf)
-
+print(
+  missing_values |>
+    filter(missing_count > 0),
+  n = Inf
+)
 
 # ------------------------------------------------------------
 # 5. Investigate missing review information
@@ -106,6 +142,16 @@ missing_reviews |>
   count(number_of_reviews) |>
   print(n = Inf)
 
+
+review_missing_check <- missing_reviews |>
+  summarise(
+    listings_with_zero_reviews =
+      sum(number_of_reviews == 0, na.rm = TRUE),
+    listings_with_reviews =
+      sum(number_of_reviews > 0, na.rm = TRUE)
+  )
+
+print(review_missing_check)
 
 # ------------------------------------------------------------
 # 6. Investigate missing price values
@@ -145,6 +191,11 @@ price_quality <- airbnb_chch |>
 
 print(price_quality)
 
+if (price_quality$zero_price > 0 ||
+    price_quality$negative_price > 0) {
+  stop("Invalid price values detected: zero or negative prices.")
+}
+
 
 # Summary statistics for observed prices.
 
@@ -176,7 +227,7 @@ print(price_summary)
 # Inspect the highest observed prices rather than removing
 # values solely because they are statistical outliers.
 
-high_price_listings <- airbnb_chch |>
+top_price_listings <- airbnb_chch |>
   select(
     id,
     name,
@@ -195,7 +246,7 @@ high_price_listings <- airbnb_chch |>
     n = 20
   )
 
-print(high_price_listings, n = 20)
+print(top_price_listings, n = 20)
 
 
 # ------------------------------------------------------------
@@ -237,6 +288,10 @@ minimum_nights_quality <- airbnb_chch |>
 
 print(minimum_nights_quality)
 
+if (minimum_nights_quality$zero_minimum_nights > 0 ||
+    minimum_nights_quality$negative_minimum_nights > 0) {
+  stop("Invalid minimum_nights values detected: zero or negative values.")
+}
 
 # Summary statistics for minimum nights.
 
@@ -280,7 +335,9 @@ duplicate_summary <- airbnb_chch |>
   )
 
 print(duplicate_summary)
-
+if (duplicate_summary$duplicate_rows > 0) {
+  stop("Duplicate listing IDs detected in the June 2026 snapshot.")
+}
 
 # ------------------------------------------------------------
 # 10. Inspect categorical variables
@@ -327,6 +384,13 @@ categorical_quality <- airbnb_chch |>
 
 print(categorical_quality)
 
+if (categorical_quality$room_type_missing > 0) {
+  stop("Missing room_type values detected.")
+}
+
+if (categorical_quality$neighbourhood_missing > 0) {
+  stop("Missing neighbourhood values detected.")
+}
 
 # ------------------------------------------------------------
 # 11. Check geographic coordinates
@@ -375,8 +439,13 @@ potential_coordinate_issues <- airbnb_chch |>
     longitude
   )
 
-print(potential_coordinate_issues, n = Inf)
+cat(
+  "Potential coordinate issues:",
+  nrow(potential_coordinate_issues),
+  "\n"
+)
 
+print(potential_coordinate_issues, n = 20)
 
 # ------------------------------------------------------------
 # 12. Check numerical variables for invalid values
@@ -408,6 +477,13 @@ numerical_quality <- airbnb_chch |>
 
 print(numerical_quality, width = Inf)
 
+if (any(numerical_quality < 0)) {
+  stop("Invalid negative numerical values detected.")
+}
+
+if (numerical_quality$availability_over_365 > 0) {
+  stop("Invalid availability_365 values above 365 detected.")
+}
 
 # ------------------------------------------------------------
 # 13. Apply cleaning decisions
@@ -436,7 +512,9 @@ airbnb_chch_clean <- airbnb_chch |>
   select(
     -license
   )
-
+if ("license" %in% names(airbnb_chch_clean)) {
+  stop("Cleaning error: license column was not removed.")
+}
 
 # ------------------------------------------------------------
 # 14. Final QA and cleaning consequences
@@ -460,13 +538,18 @@ final_qa <- airbnb_chch_clean |>
 
 print(final_qa)
 
-# Check that the license column has been removed
-print(
-  "license" %in% names(airbnb_chch_clean)
-)
+if (final_qa$duplicate_rows > 0) {
+  stop("Final QA failed: duplicate listing IDs remain.")
+}
 
+if (final_qa$christchurch_listings != final_qa$rows_after_cleaning) {
+  stop("Final QA failed: non-Christchurch records remain.")
+}
 
-
+if (final_qa$snapshot_months != 1 ||
+    final_qa$snapshot_years != 1) {
+  stop("Final QA failed: multiple snapshot periods remain.")
+}
 # ------------------------------------------------------------
 # 16. Cleaning consequences
 # ------------------------------------------------------------
@@ -490,9 +573,16 @@ cat(
 # 17. Save cleaned dataset
 # ------------------------------------------------------------
 
+if (!dir.exists(dirname(output_file))) {
+  dir.create(
+    dirname(output_file),
+    recursive = TRUE
+  )
+}
+
 write_csv(
   airbnb_chch_clean,
-  "data/processed/airbnb_christchurch_2026_06_clean.csv"
+  output_file
 )
 
 
@@ -500,8 +590,8 @@ write_csv(
 # 18. Confirm processed file was created
 # ------------------------------------------------------------
 
-print(
-  file.exists(
-    "data/processed/airbnb_christchurch_2026_06_clean.csv"
-  )
-)
+if (!file.exists(output_file)) {
+  stop("Output file was not created: ", output_file)
+}
+
+message("Cleaned dataset saved successfully: ", output_file)
