@@ -11,7 +11,42 @@ library(tidyverse)
 # ============================================================
 
 tenancy_file <- "data/raw/Detailed-Quarterly-Tenancy-Q1-2020-Q3-2026.csv"
+output_full_file <- "data/processed/tenancy_clean.csv"
+output_project_file <- "data/processed/tenancy_christchurch_oct2025_jun2026_clean.csv"
 
+dir.create(
+  dirname(output_full_file),
+  recursive = TRUE,
+  showWarnings = FALSE
+)
+
+if (!file.exists(tenancy_file)) {
+  stop("Tenancy input file not found: ", tenancy_file)
+}
+
+required_columns <- c(
+  "TimeFrame",
+  "Location Id",
+  "Dwelling Type",
+  "Number Of Beds",
+  "Total Bonds",
+  "Active Bonds",
+  "Closed Bonds",
+  "Median Rent",
+  "Geometric Mean Rent",
+  "Upper Quartile Rent",
+  "Lower Quartile Rent",
+  "Log Std Dev Weekly Rent"
+)
+
+missing_columns <- setdiff(required_columns, names(tenancy))
+
+if (length(missing_columns) > 0) {
+  stop(
+    "Required Tenancy columns are missing: ",
+    paste(missing_columns, collapse = ", ")
+  )
+}
 tenancy <- read_csv(
   tenancy_file,
   show_col_types = FALSE
@@ -82,6 +117,17 @@ print(
 # dates and the reporting periods form a continuous quarterly
 # sequence. No cleaning is required for TimeFrame.
 
+if (!inherits(tenancy$TimeFrame, "Date")) {
+  stop("TimeFrame is not stored as a Date.")
+}
+
+if (any(is.na(tenancy$TimeFrame))) {
+  stop("TimeFrame contains missing values.")
+}
+
+if (n_distinct(tenancy$TimeFrame) < 2) {
+  stop("Tenancy data does not contain enough reporting periods for quarterly analysis.")
+}
 
 # ============================================================
 # 4. Inspect Location Id
@@ -253,7 +299,12 @@ print(
 # removed or recoded. Numeric Location Ids require no
 # reformatting.
 
+numeric_location_ids <- tenancy |>
+  filter(grepl("^[0-9]+$", `Location Id`))
 
+if (any(nchar(numeric_location_ids$`Location Id`) != 6)) {
+  stop("Some numeric Location Id values do not contain six digits.")
+}
 # ============================================================
 # 5. Inspect Dwelling Type
 # ============================================================
@@ -279,7 +330,22 @@ print(
 # Dwelling Type contains six categories:
 # ALL, House, Flat, Apartment, Room, and Boarding House.
 # There are no missing values. No cleaning is required.
+dwelling_type_check <- tenancy |>
+  summarise(
+    missing = sum(is.na(`Dwelling Type`)),
+    number_of_categories = n_distinct(`Dwelling Type`)
+  )
 
+if (dwelling_type_check$missing > 0) {
+  stop("Dwelling Type contains missing values.")
+}
+
+if (dwelling_type_check$number_of_categories != 6) {
+  warning(
+    "Expected 6 Dwelling Type categories, found ",
+    dwelling_type_check$number_of_categories, "."
+  )
+}
 
 # ============================================================
 # 6. Inspect Number Of Beds
@@ -330,6 +396,20 @@ tenancy |>
   filter(`Number Of Beds` == "ALL") |>
   print(n = Inf)
 
+
+
+if (!is.character(tenancy$`Number Of Beds`)) {
+  stop("Number Of Beds should remain a character variable.")
+}
+
+if (!"ALL" %in% tenancy$`Number Of Beds`) {
+  warning("Expected 'ALL' category was not found in Number Of Beds.")
+}
+
+if (!"5+" %in% tenancy$`Number Of Beds`) {
+  warning("Expected '5+' category was not found in Number Of Beds.")
+}
+
 # Observation:
 # Number Of Beds contains numeric-style values as well as
 # meaningful categorical values such as "ALL" and "5+".
@@ -361,6 +441,26 @@ print(
     count(`Total Bonds`, sort = TRUE) |>
     slice_head(n = 20)
 )
+bond_columns <- c(
+  "Total Bonds",
+  "Active Bonds",
+  "Closed Bonds"
+)
+
+bond_check <- tenancy |>
+  summarise(
+    across(
+      all_of(bond_columns),
+      list(
+        missing = ~ sum(is.na(.)),
+        negative = ~ sum(. < 0, na.rm = TRUE)
+      )
+    )
+  )
+
+if (any(unlist(bond_check) > 0)) {
+  stop("Bond variables contain unexpected missing or negative values.")
+}
 
 # Observation:
 # Total Bonds contains no missing values and no negative values.
@@ -818,7 +918,100 @@ print(
 # Each combination occurs only once. No duplicate observations
 # were identified at the expected reporting-unit level.
 
+rent_cols <- c(
+  "Median Rent",
+  "Geometric Mean Rent",
+  "Upper Quartile Rent",
+  "Lower Quartile Rent",
+  "Log Std Dev Weekly Rent"
+)
 
+unexpected_rent_values <- tenancy |>
+  summarise(
+    across(
+      all_of(rent_cols),
+      ~ sum(
+        is.na(suppressWarnings(as.numeric(.))) &
+          . != "NULL",
+        na.rm = TRUE
+      )
+    )
+  )
+
+if (any(unlist(unexpected_rent_values) > 0)) {
+  stop(
+    "Unexpected non-numeric values found in one or more rent variables."
+  )
+}
+
+rent_missing_check <- tenancy |>
+  summarise(
+    median_null = sum(`Median Rent` == "NULL", na.rm = TRUE),
+    geometric_null = sum(`Geometric Mean Rent` == "NULL", na.rm = TRUE),
+    upper_null = sum(`Upper Quartile Rent` == "NULL", na.rm = TRUE),
+    lower_null = sum(`Lower Quartile Rent` == "NULL", na.rm = TRUE),
+    all_four_null = sum(
+      `Median Rent` == "NULL" &
+        `Geometric Mean Rent` == "NULL" &
+        `Upper Quartile Rent` == "NULL" &
+        `Lower Quartile Rent` == "NULL"
+    )
+  )
+
+if (
+  rent_missing_check$median_null !=
+  rent_missing_check$geometric_null ||
+  rent_missing_check$median_null !=
+  rent_missing_check$upper_null ||
+  rent_missing_check$median_null !=
+  rent_missing_check$lower_null ||
+  rent_missing_check$all_four_null != rent_missing_check$median_null
+) {
+  warning(
+    "The four main rent measures do not have identical NULL patterns."
+  )
+}
+
+log_sd_check <- tenancy |>
+  summarise(
+    null_count = sum(`Log Std Dev Weekly Rent` == "NULL", na.rm = TRUE),
+    negative_count = sum(
+      suppressWarnings(
+        as.numeric(`Log Std Dev Weekly Rent`)
+      ) < 0,
+      na.rm = TRUE
+    ),
+    zero_count = sum(
+      suppressWarnings(
+        as.numeric(`Log Std Dev Weekly Rent`)
+      ) == 0,
+      na.rm = TRUE
+    )
+  )
+
+if (log_sd_check$negative_count > 0) {
+  stop("Negative Log Std Dev Weekly Rent values were found.")
+}
+
+if (log_sd_check$zero_count == 0) {
+  warning("No zero Log Std Dev Weekly Rent values were found.")
+}
+
+reporting_key_check <- tenancy |>
+  count(
+    TimeFrame,
+    `Location Id`,
+    `Dwelling Type`,
+    `Number Of Beds`,
+    name = "n"
+  ) |>
+  filter(n > 1)
+
+if (nrow(reporting_key_check) > 0) {
+  stop(
+    "Duplicate reporting-unit combinations were found."
+  )
+}
 # ============================================================
 # 19. Cleaning decisions
 # ============================================================
@@ -865,13 +1058,7 @@ print(
 # 20. Apply cleaning decisions
 # ============================================================
 
-rent_cols <- c(
-  "Median Rent",
-  "Geometric Mean Rent",
-  "Upper Quartile Rent",
-  "Lower Quartile Rent",
-  "Log Std Dev Weekly Rent"
-)
+
 
 tenancy_clean <- tenancy |>
   mutate(
@@ -904,9 +1091,49 @@ print(
 
 # Confirm that the number of rows and columns has not changed
 # during cleaning.
-print(
-  dim(tenancy_clean)
+if (nrow(tenancy_clean) != nrow(tenancy)) {
+  stop(
+    "Row count changed during cleaning: ",
+    nrow(tenancy),
+    " before vs ",
+    nrow(tenancy_clean),
+    " after."
+  )
+}
+
+if (ncol(tenancy_clean) != ncol(tenancy)) {
+  stop(
+    "Column count changed during cleaning: ",
+    ncol(tenancy),
+    " before vs ",
+    ncol(tenancy_clean),
+    " after."
+  )
+}
+rent_type_check <- sapply(
+  tenancy_clean[rent_cols],
+  is.numeric
 )
+
+if (!all(rent_type_check)) {
+  stop("One or more rent variables were not converted to numeric.")
+}
+
+rent_missing_after_cleaning <- tenancy_clean |>
+  summarise(
+    across(
+      all_of(rent_cols),
+      ~ sum(is.na(.))
+    )
+  )
+
+print(rent_missing_after_cleaning)
+if (any(unlist(rent_missing_after_cleaning) == 0)) {
+  warning(
+    "At least one rent variable has no missing values after cleaning. ",
+    "Check whether this matches the source data."
+  )
+}
 
 # Recheck the reporting-unit key after cleaning to confirm
 # that no duplicate combinations were introduced or removed.
@@ -918,12 +1145,28 @@ duplicate_check <- tenancy_clean |>
     `Number Of Beds`,
     name = "n"
   ) |>
-  summarise(
-    duplicate_combinations = sum(n > 1),
-    maximum_repetitions = max(n)
-  )
+  filter(n > 1)
 
-print(duplicate_check)
+if (nrow(duplicate_check) > 0) {
+  stop(
+    "Duplicate reporting-unit combinations were introduced or remain after cleaning."
+  )
+}
+
+expected_project_periods <- as.Date(
+  c("2025-10-01", "2026-01-01", "2026-04-01")
+)
+
+actual_project_periods <- sort(unique(tenancy_project$TimeFrame))
+
+if (!identical(actual_project_periods, expected_project_periods)) {
+  stop(
+    "Project-period Tenancy dataset does not contain the expected reporting periods."
+  )
+}
+if (nrow(tenancy_project) == 0) {
+  stop("Project-period Tenancy dataset contains no records.")
+}
 
 
 # ============================================================
@@ -935,10 +1178,17 @@ print(duplicate_check)
 # available for reproducible analysis.
 write_csv(
   tenancy_clean,
-  "data/processed/tenancy_clean.csv"
+  output_full_file
 )
 
+if (!file.exists(output_full_file)) {
+  stop("Full cleaned Tenancy output file was not created.")
+}
 
+message(
+  "Full cleaned Tenancy dataset saved successfully: ",
+  output_full_file
+)
 # ============================================================
 # 23. Create project-period dataset
 # ============================================================
@@ -976,5 +1226,68 @@ print(
 # Airbnb and Tenancy analysis.
 write_csv(
   tenancy_project,
-  "data/processed/tenancy_christchurch_oct2025_jun2026_clean.csv"
+  output_project_file
 )
+
+if (!file.exists(output_project_file)) {
+  stop("Project-period Tenancy output file was not created.")
+}
+
+message(
+  "Project-period Tenancy dataset saved successfully: ",
+  output_project_file
+)
+
+if (nrow(tenancy_project) > nrow(tenancy_clean)) {
+  stop(
+    "Project-period dataset contains more rows than the full cleaned dataset."
+  )
+}
+
+# to confirm location id data is not lost
+full_project_locations <- tenancy_clean |>
+  filter(
+    TimeFrame >= as.Date("2025-10-01"),
+    TimeFrame <= as.Date("2026-04-01")
+  ) |>
+  distinct(`Location Id`)
+
+project_locations <- tenancy_project |>
+  distinct(`Location Id`)
+
+if (!setequal(
+  full_project_locations$`Location Id`,
+  project_locations$`Location Id`
+)) {
+  stop(
+    "Project-period filtering changed the set of Location Id values."
+  )
+}
+
+if (any(
+  tenancy_project$TimeFrame < as.Date("2025-10-01") |
+  tenancy_project$TimeFrame > as.Date("2026-04-01")
+)) {
+  stop("Project-period dataset contains records outside the requested date range.")
+}
+
+project_period_check <- tibble(
+  full_cleaned_rows = nrow(tenancy_clean),
+  project_period_rows = nrow(tenancy_project),
+  rows_excluded = nrow(tenancy_clean) - nrow(tenancy_project)
+)
+
+print(project_period_check)
+
+if (project_period_check$rows_excluded < 0) {
+  stop("Project-period filtering increased the number of rows.")
+}
+
+if (!identical(names(tenancy_project), names(tenancy_clean))) {
+  stop(
+    "Project-period filtering changed the columns of the Tenancy dataset."
+  )
+}
+if (any(is.na(tenancy_clean$TimeFrame))) {
+  stop("Missing TimeFrame values were introduced during cleaning.")
+}
