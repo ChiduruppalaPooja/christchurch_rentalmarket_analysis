@@ -12,6 +12,11 @@ pipeline_config <- list(
   quality_dir = "data/processed/quality",
   summary_dir = "output/tables",
   figure_dir = "output/figures",
+  raw_dir = "data/raw",
+  cleaned_airbnb = "data/processed/airbnb_christchurch_oct2025_jun2026_clean.csv",
+  tenancy_raw = "data/raw/Detailed-Quarterly-Tenancy-Q1-2020-Q3-2026.csv",
+  tenancy_full = "data/processed/tenancy_clean.csv",
+  geography_cache = "data/processed/airbnb_sa2_2019_lookup_cache.csv",
   database_file = "data/processed/christchurch_rental_market.sqlite",
   database_tables = c(
     "dim_geography", "fact_airbnb_listing_month", "fact_airbnb_listing_quarter",
@@ -19,3 +24,15 @@ pipeline_config <- list(
     "market_sa2_quarter"
   )
 )
+
+# The root orchestrator supplies a run-specific configuration without rewriting
+# the older scripts' defaults or overwriting earlier deliverable outputs.
+overrides <- getOption("rental.pipeline.overrides", list())
+if (length(setdiff(names(overrides), names(pipeline_config)))) {
+  stop("Unknown pipeline configuration setting.")
+}
+pipeline_config <- utils::modifyList(pipeline_config, overrides)
+if (anyNA(c(pipeline_config$study_start, pipeline_config$study_end)) ||
+    pipeline_config$study_end < pipeline_config$study_start) {
+  stop("Invalid configured study dates.")
+}

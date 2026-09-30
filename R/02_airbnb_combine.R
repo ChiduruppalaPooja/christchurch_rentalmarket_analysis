@@ -1,9 +1,12 @@
 # ============================================================
 # DATA422 - Airbnb Christchurch Rental Market Analysis
-# Deliverable 3: Combine October 2025 - June 2026
+# Deliverable 3 cleaning, reused for the configured monthly period.
+# Historical observation comments below describe the original Oct-Jun review;
+# use the generated summaries for the current run's counts and missingness.
 # ============================================================
 
 library(tidyverse)
+source("R/pipeline_config.R", local = TRUE)
 
 
 # ============================================================
@@ -11,33 +14,12 @@ library(tidyverse)
 # ============================================================
 
 # Define the monthly Airbnb files included in the project.
-# These files cover October 2025 to June 2026.
-input_files <- c(
-  "data/raw/listings_2025_10.csv",
-  "data/raw/listings_2025_11.csv",
-  "data/raw/listings_2025_12.csv",
-  "data/raw/listings_2026_01.csv",
-  "data/raw/listings_2026_02.csv",
-  "data/raw/listings_2026_03.csv",
-  "data/raw/listings_2026_04.csv",
-  "data/raw/listings_2026_05.csv",
-  "data/raw/listings_2026_06.csv"
-)
-
-output_file <- "data/processed/airbnb_christchurch_oct2025_jun2026_clean.csv"
-
-
-expected_months <- c(
-  "2025_10",
-  "2025_11",
-  "2025_12",
-  "2026_01",
-  "2026_02",
-  "2026_03",
-  "2026_04",
-  "2026_05",
-  "2026_06"
-)
+# The root automation runner can extend the original October-June period.
+expected_months <- format(seq(pipeline_config$study_start,
+                             pipeline_config$study_end, by = "month"), "%Y_%m")
+input_files <- file.path(pipeline_config$raw_dir,
+                         paste0("listings_", expected_months, ".csv"))
+output_file <- pipeline_config$cleaned_airbnb
 
 actual_months <- str_extract(
   basename(input_files),
@@ -46,7 +28,7 @@ actual_months <- str_extract(
 
 if (!identical(actual_months, expected_months)) {
   stop(
-    "Monthly Airbnb inputs do not match the expected October 2025 to June 2026 period."
+    "Monthly Airbnb inputs do not match the configured study period."
   )
 }
 
@@ -62,15 +44,31 @@ if (length(missing_inputs) > 0) {
 }
 
 
-dir.create("data/processed", recursive = TRUE, showWarnings = FALSE)
+dir.create(dirname(output_file), recursive = TRUE, showWarnings = FALSE)
 dir.create("output/tables", recursive = TRUE, showWarnings = FALSE)
 
 # Read all monthly datasets into a list so they can be
 # inspected, filtered, and combined consistently.
 listings <- map(
   input_files,
-  ~ read_csv(.x, show_col_types = FALSE)
+  ~ read_csv(.x, col_types = cols(
+    .default = col_double(), id = col_character(), name = col_character(),
+    host_id = col_character(), host_name = col_character(),
+    neighbourhood_group = col_character(), neighbourhood = col_character(),
+    room_type = col_character(), last_review = col_date(), license = col_character()
+  ), show_col_types = FALSE)
 )
+if (any(map_lgl(listings, ~ nrow(problems(.x)) > 0))) {
+  stop("A monthly CSV has parsing errors. Review the raw file before combining.")
+}
+required_columns <- c("id", "name", "host_id", "host_name", "neighbourhood_group",
+                      "neighbourhood", "latitude", "longitude", "room_type", "price",
+                      "minimum_nights", "number_of_reviews", "last_review",
+                      "reviews_per_month", "calculated_host_listings_count",
+                      "availability_365", "number_of_reviews_ltm", "license")
+if (any(map_lgl(listings, ~ !all(required_columns %in% names(.x))))) {
+  stop("A monthly CSV lacks required summary-listings columns.")
+}
 
 
 # ============================================================
@@ -184,7 +182,7 @@ map(listings_chch, glimpse)
 # 5. Combine the monthly datasets
 # ============================================================
 
-# Combine the nine filtered monthly datasets into one dataset
+# Combine the configured filtered monthly datasets into one dataset
 # for the project analysis.
 listings_chch_combined <- bind_rows(listings_chch)
 
@@ -650,6 +648,13 @@ if (nrow(duplicate_listing_months) > 0) {
   stop(
     "Found duplicate listing IDs within the same month."
   )
+}
+if (anyNA(airbnb_christchurch_clean$id) || any(airbnb_christchurch_clean$id == "")) {
+  stop("Listing IDs must not be missing or empty.")
+}
+if (any(!is.na(airbnb_christchurch_clean$price) &
+        (!is.finite(airbnb_christchurch_clean$price) | airbnb_christchurch_clean$price < 0))) {
+  stop("Prices must be nonnegative finite numbers or NA.")
 }
 # Check how many listing IDs appear in more than one monthly
 # snapshot. Repeated IDs across months are expected because

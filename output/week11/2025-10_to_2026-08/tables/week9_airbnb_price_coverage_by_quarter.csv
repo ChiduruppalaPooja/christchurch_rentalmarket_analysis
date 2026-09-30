@@ -1,0 +1,5 @@
+comparison_quarter,total_rows,observed_prices,missing_prices,observed_price_percent,months_with_any_observed_price
+2025-10-01,9218,5656,3562,61.36,2
+2026-01-01,9474,3059,6415,32.29,1
+2026-04-01,10103,9413,690,93.17,3
+2026-07-01,7001,6350,651,90.7,2

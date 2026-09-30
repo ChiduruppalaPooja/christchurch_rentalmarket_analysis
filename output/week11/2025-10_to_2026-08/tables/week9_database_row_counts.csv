@@ -1,0 +1,8 @@
+table_name,row_count
+dim_geography,171
+fact_airbnb_listing_month,35796
+fact_airbnb_listing_quarter,13938
+fact_airbnb_sa2_quarter,678
+fact_tenancy_detail,27212
+fact_tenancy_sa2_quarter,4871
+market_sa2_quarter,408

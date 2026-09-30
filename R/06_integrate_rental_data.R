@@ -5,7 +5,7 @@
 # ============================================================
 
 library(tidyverse)
-source("R/pipeline_config.R")
+source("R/pipeline_config.R", local = TRUE)
 source("R/helpers/integration_helpers.R")
 
 airbnb_file <- pipeline_config$airbnb_input
@@ -21,7 +21,7 @@ if (length(missing_files) > 0) {
     paste0(
       "Required processed file(s) not found:\n- ",
       paste(missing_files, collapse = "\n- "),
-      "\nRun R/03_tenancy_inspect.R and R/05_query_geography.R first."
+      "\nRun R/03_tenancy_prepare.R and R/05_query_geography.R first."
     )
   )
 }

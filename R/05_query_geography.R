@@ -5,7 +5,7 @@
 
 library(tidyverse)
 library(jsonlite)
-source("R/pipeline_config.R")
+source("R/pipeline_config.R", local = TRUE)
 source("R/helpers/integration_helpers.R")
 
 # Tenancy Services documents that the bond data use SA2-2019 definitions.
@@ -15,8 +15,8 @@ koordinates_url <- paste0(
 )
 
 airbnb_candidates <- c(
-  "data/processed/airbnb_christchurch_combined.csv",
-  "data/processed/airbnb_christchurch_oct2025_jun2026_clean.csv"
+  pipeline_config$cleaned_airbnb,
+  "data/processed/airbnb_christchurch_combined.csv"
 )
 
 airbnb_input <- Sys.getenv("AIRBNB_INPUT")
@@ -32,16 +32,16 @@ if (airbnb_input == "") {
   }
 }
 
-airbnb_output <- "data/processed/airbnb_christchurch_with_sa2.csv"
+airbnb_output <- pipeline_config$airbnb_input
 
 lookup_cache <-
-  "data/processed/airbnb_sa2_2019_lookup_cache.csv"
+  pipeline_config$geography_cache
 
 match_summary_output <-
-  "output/tables/week9_api_match_summary.csv"
+  file.path(pipeline_config$summary_dir, "week9_api_match_summary.csv")
 
 unmatched_output <-
-  "output/tables/week9_unmatched_coordinates.csv"
+  file.path(pipeline_config$summary_dir, "week9_unmatched_coordinates.csv")
 
 if (!file.exists(airbnb_input)) {
   stop(
@@ -53,8 +53,8 @@ if (!file.exists(airbnb_input)) {
   )
 }
 
-dir.create("data/processed", recursive = TRUE, showWarnings = FALSE)
-dir.create("output/tables", recursive = TRUE, showWarnings = FALSE)
+dir.create(dirname(airbnb_output), recursive = TRUE, showWarnings = FALSE)
+dir.create(pipeline_config$summary_dir, recursive = TRUE, showWarnings = FALSE)
 
 airbnb <- read_csv(
   airbnb_input,
@@ -273,6 +273,10 @@ if (nrow(coordinates_to_query) > 0) {
       format(nrow(coordinates_to_query), big.mark = ",")
     )
   }
+}
+
+if (any(cache$api_status == "request_failed_after_3_attempts")) {
+  stop("Some SA2 API requests failed. Successful results are cached; rerun to retry failures before publishing updated results.")
 }
 
 airbnb_with_sa2 <- airbnb |>

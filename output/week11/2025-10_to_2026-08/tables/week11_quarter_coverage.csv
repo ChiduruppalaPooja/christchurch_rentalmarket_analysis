@@ -1,0 +1,5 @@
+comparison_quarter,airbnb_months,full_three_months,tenancy_available
+2025-10-01,3,TRUE,TRUE
+2026-01-01,3,TRUE,TRUE
+2026-04-01,3,TRUE,TRUE
+2026-07-01,2,FALSE,FALSE

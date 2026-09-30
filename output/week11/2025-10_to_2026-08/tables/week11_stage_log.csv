@@ -1,0 +1,8 @@
+stage,status,seconds
+01_airbnb_cleaning,reused,0.01
+02_tenancy_cleaning,reused,0.02
+03_summaries,reused,0
+04_geography,reused,0.01
+05_integration,reused,0.02
+06_database,ran,0.59
+07_plots,reused,0

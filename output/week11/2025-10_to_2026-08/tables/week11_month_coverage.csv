@@ -1,0 +1,12 @@
+snapshot_date,listings,priced_listings,missing_prices,median_nightly_price,comparison_quarter,tenancy_quarter_available,interpretation
+2025-10-01,2991,2821,170,155,2025-10-01,TRUE,Area matches checked separately
+2025-11-01,3047,2835,212,166,2025-10-01,TRUE,Area matches checked separately
+2025-12-01,3180,0,3180,NA,2025-10-01,TRUE,Area matches checked separately
+2026-01-01,3057,0,3057,NA,2026-01-01,TRUE,Area matches checked separately
+2026-02-01,3190,0,3190,NA,2026-01-01,TRUE,Area matches checked separately
+2026-03-01,3227,3059,168,237,2026-01-01,TRUE,Area matches checked separately
+2026-04-01,3273,3069,204,229,2026-04-01,TRUE,Area matches checked separately
+2026-05-01,3361,3149,212,215,2026-04-01,TRUE,Area matches checked separately
+2026-06-01,3469,3195,274,214,2026-04-01,TRUE,Area matches checked separately
+2026-07-01,3488,3173,315,227,2026-07-01,FALSE,Airbnb-only: no matching tenancy quarter
+2026-08-01,3513,3177,336,224,2026-07-01,FALSE,Airbnb-only: no matching tenancy quarter

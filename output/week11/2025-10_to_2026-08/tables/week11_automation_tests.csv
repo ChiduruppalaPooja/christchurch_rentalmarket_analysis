@@ -1,0 +1,24 @@
+check,status
+Valid month becomes first-of-month date,PASS
+Invalid calendar month rejected,PASS
+Ambiguous month text rejected,PASS
+Extended period has eleven monthly inputs,PASS
+July included,PASS
+August included,PASS
+Reversed dates rejected,PASS
+Official July-August manifest accepted,PASS
+Duplicate manifest month rejected,PASS
+Detailed gzip dataset rejected,PASS
+Mismatched source date rejected,PASS
+Unchanged output can be reused,PASS
+Changed input invalidates cached stage,PASS
+Changed code invalidates cached stage,PASS
+Changed setting invalidates cached stage,PASS
+Edited output invalidates cached stage,PASS
+Missing output invalidates cached stage,PASS
+HTML masquerading as CSV rejected,PASS
+New stage executes and records its output,PASS
+Unchanged stage really skips execution,PASS
+Changed input really regenerates output,PASS
+Failed stage does not record a successful checkpoint,PASS
+Corrected stage can recover after failure,PASS

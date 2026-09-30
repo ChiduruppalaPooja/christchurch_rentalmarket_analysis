@@ -1,0 +1,2 @@
+layer_id,total_airbnb_rows,rows_with_coordinates,rows_matched_to_sa2,rows_unmatched_to_sa2,match_percent,unique_sa2_codes
+98970,35796,35796,35796,0,100,171

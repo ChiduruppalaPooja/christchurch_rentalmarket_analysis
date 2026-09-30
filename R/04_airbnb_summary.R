@@ -4,13 +4,18 @@
 # ============================================================
 
 library(tidyverse)
+source("R/pipeline_config.R", local = TRUE)
+summary_dir <- pipeline_config$summary_dir
+dir.create(summary_dir, recursive = TRUE, showWarnings = FALSE)
 
 # ============================================================
 # Load cleaned dataset
 # ============================================================
 
 airbnb_christchurch_clean <- read_csv(
-  "data/processed/airbnb_christchurch_oct2025_jun2026_clean.csv"
+  pipeline_config$cleaned_airbnb,
+  col_types = cols(id = col_character(), host_id = col_character()),
+  show_col_types = FALSE
 )
 
 # ============================================================
@@ -161,30 +166,30 @@ print(duplicate_rows)
 
 write_csv(
   missing_values,
-  "output/tables/airbnb_missing_values.csv"
+  file.path(summary_dir, "airbnb_missing_values.csv")
 )
 
 write_csv(
   numeric_summary,
-  "output/tables/airbnb_numeric_summary.csv"
+  file.path(summary_dir, "airbnb_numeric_summary.csv")
 )
 
 write_csv(
   categorical_summary,
-  "output/tables/airbnb_categorical_summary.csv"
+  file.path(summary_dir, "airbnb_categorical_summary.csv")
 )
 
 write_csv(
   room_type_summary,
-  "output/tables/airbnb_room_type_summary.csv"
+  file.path(summary_dir, "airbnb_room_type_summary.csv")
 )
 
 write_csv(
   neighbourhood_summary,
-  "output/tables/airbnb_neighbourhood_summary.csv"
+  file.path(summary_dir, "airbnb_neighbourhood_summary.csv")
 )
 
 write_csv(
   snapshot_summary,
-  "output/tables/airbnb_snapshot_summary.csv"
+  file.path(summary_dir, "airbnb_snapshot_summary.csv")
 )

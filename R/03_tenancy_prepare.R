@@ -1,18 +1,23 @@
 # ============================================================
 # DATA422 - Tenancy Services Rental Data
 # Cleaning and Inspection
+# Historical observation comments describe the team's initial review.
+# The current run's date coverage is checked from the data, not the filename.
 # ============================================================
 
 library(tidyverse)
+source("R/pipeline_config.R", local = TRUE)
 
 
 # ============================================================
 # 1. Load raw tenancy data
 # ============================================================
 
-tenancy_file <- "data/raw/Detailed-Quarterly-Tenancy-Q1-2020-Q3-2026.csv"
-output_full_file <- "data/processed/tenancy_clean.csv"
-output_project_file <- "data/processed/tenancy_christchurch_oct2025_jun2026_clean.csv"
+tenancy_file <- pipeline_config$tenancy_raw
+output_full_file <- pipeline_config$tenancy_full
+output_project_file <- pipeline_config$tenancy_input
+project_start <- pipeline_config$study_start
+project_end <- pipeline_config$study_end
 
 dir.create(
   dirname(output_full_file),
@@ -39,6 +44,11 @@ required_columns <- c(
   "Log Std Dev Weekly Rent"
 )
 
+tenancy <- read_csv(
+  tenancy_file,
+  show_col_types = FALSE
+)
+
 missing_columns <- setdiff(required_columns, names(tenancy))
 
 if (length(missing_columns) > 0) {
@@ -47,10 +57,6 @@ if (length(missing_columns) > 0) {
     paste(missing_columns, collapse = ", ")
   )
 }
-tenancy <- read_csv(
-  tenancy_file,
-  show_col_types = FALSE
-)
 
 
 # ============================================================
@@ -1153,22 +1159,6 @@ if (nrow(duplicate_check) > 0) {
   )
 }
 
-expected_project_periods <- as.Date(
-  c("2025-10-01", "2026-01-01", "2026-04-01")
-)
-
-actual_project_periods <- sort(unique(tenancy_project$TimeFrame))
-
-if (!identical(actual_project_periods, expected_project_periods)) {
-  stop(
-    "Project-period Tenancy dataset does not contain the expected reporting periods."
-  )
-}
-if (nrow(tenancy_project) == 0) {
-  stop("Project-period Tenancy dataset contains no records.")
-}
-
-
 # ============================================================
 # 22. Save full cleaned dataset
 # ============================================================
@@ -1199,9 +1189,23 @@ message(
 # October 2025, January 2026, and April 2026.
 tenancy_project <- tenancy_clean |>
   filter(
-    TimeFrame >= as.Date("2025-10-01"),
-    TimeFrame <= as.Date("2026-04-01")
+    TimeFrame >= project_start,
+    TimeFrame <= project_end
   )
+
+expected_project_periods <- seq(project_start, project_end, by = "3 months")
+
+actual_project_periods <- sort(unique(tenancy_project$TimeFrame))
+
+if (any(!actual_project_periods %in% expected_project_periods)) {
+  stop("Tenancy contains an unexpected reporting period.")
+}
+if (length(setdiff(expected_project_periods, actual_project_periods))) {
+  warning("Tenancy does not cover every study quarter. Missing quarters remain unmatched; no rent is carried forward.")
+}
+if (nrow(tenancy_project) == 0) {
+  stop("Project-period Tenancy dataset contains no records.")
+}
 
 # Check the number of records and variables in the project
 # subset to confirm that the filtering produced the expected
@@ -1247,8 +1251,8 @@ if (nrow(tenancy_project) > nrow(tenancy_clean)) {
 # to confirm location id data is not lost
 full_project_locations <- tenancy_clean |>
   filter(
-    TimeFrame >= as.Date("2025-10-01"),
-    TimeFrame <= as.Date("2026-04-01")
+    TimeFrame >= project_start,
+    TimeFrame <= project_end
   ) |>
   distinct(`Location Id`)
 
@@ -1265,8 +1269,8 @@ if (!setequal(
 }
 
 if (any(
-  tenancy_project$TimeFrame < as.Date("2025-10-01") |
-  tenancy_project$TimeFrame > as.Date("2026-04-01")
+  tenancy_project$TimeFrame < project_start |
+  tenancy_project$TimeFrame > project_end
 )) {
   stop("Project-period dataset contains records outside the requested date range.")
 }

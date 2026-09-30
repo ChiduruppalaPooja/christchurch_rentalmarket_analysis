@@ -1,0 +1,16 @@
+variable,missing_count,missing_percent
+price,11318,31.62
+last_review,3234,9.03
+reviews_per_month,3234,9.03
+minimum_nights,37,0.1
+id,0,0
+host_id,0,0
+neighbourhood,0,0
+latitude,0,0
+longitude,0,0
+room_type,0,0
+number_of_reviews,0,0
+calculated_host_listings_count,0,0
+availability_365,0,0
+number_of_reviews_ltm,0,0
+month_year,0,0

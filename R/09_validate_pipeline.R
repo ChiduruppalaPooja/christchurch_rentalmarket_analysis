@@ -1,7 +1,7 @@
 # Inputs: saved source and result CSVs. Output: a tutor-readable sanity-check table.
 # Recompute listing and area medians with base R, independently of the pipeline helpers.
 library(tidyverse)
-source("R/pipeline_config.R")
+source("R/pipeline_config.R", local = TRUE)
 
 validate_saved_pipeline <- function(config) {
   pipeline_config <- config

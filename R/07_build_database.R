@@ -2,7 +2,7 @@
 # Output: a transactional SQLite database and its table row-count summary.
 library(tidyverse)
 library(DBI)
-source("R/pipeline_config.R")
+source("R/pipeline_config.R", local = TRUE)
 source("R/helpers/integration_helpers.R")
 
 build_rental_database <- function(config) {

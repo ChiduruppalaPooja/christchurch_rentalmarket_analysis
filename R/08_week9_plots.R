@@ -4,7 +4,7 @@
 # ============================================================
 
 library(tidyverse)
-source("R/pipeline_config.R")
+source("R/pipeline_config.R", local = TRUE)
 
 summary_dir <- pipeline_config$summary_dir
 figure_dir <- pipeline_config$figure_dir
@@ -13,6 +13,7 @@ study_quarters <- length(seq(pipeline_config$study_start, pipeline_config$study_
 study_label <- paste(format(pipeline_config$study_start, "%B %Y"), format(pipeline_config$study_end, "%B %Y"), sep = "-")
 quarter_end <- seq(chart_quarter, by = "3 months", length.out = 2)[[2]] - 1
 quarter_label <- paste0(format(chart_quarter, "%B"), "-", format(quarter_end, "%B %Y"))
+quarter_slug <- paste0(format(chart_quarter, "%Y"), "q", (as.integer(format(chart_quarter, "%m")) - 1L) %/% 3L + 1L)
 
 chart_inputs <- file.path(
   summary_dir,
@@ -74,7 +75,7 @@ if (any(!is.finite(rental_count_chart_data$active_bonds)) ||
 
 dir.create(figure_dir, recursive = TRUE, showWarnings = FALSE)
 write_csv(price_gap_chart_data, file.path(summary_dir, "week9_plot_price_gaps_top10.csv"))
-write_csv(rental_count_chart_data, file.path(summary_dir, "week9_plot_counts_top10_2026q2.csv"))
+write_csv(rental_count_chart_data, file.path(summary_dir, paste0("week9_plot_counts_top10_", quarter_slug, ".csv")))
 
 chart_theme <- theme_minimal(base_size = 14, base_family = "sans") +
   theme(
@@ -121,7 +122,7 @@ price_gap_plot <- ggplot(gap_plot_data, aes(x = median_nightly_price_gap, y = ar
       "Each listing contributes one within-quarter median. Ambiguous listing-quarter area assignments are excluded and recorded.",
       "Labels show quarters with a usable gap. Airbnb prices are missing for Dec 2025-Feb 2026; only available prices are used.",
       "Advertised Airbnb prices and bond rents describe different markets; the gap is not a profit or causal estimate.",
-      "Sources: Inside Airbnb; MBIE Tenancy Services; Stats NZ. Based on the saved Week 9 integration results.", sep = "\n"
+      "Sources: Inside Airbnb; MBIE Tenancy Services; Stats NZ. Only quarters with matching tenancy data contribute to gaps.", sep = "\n"
     )
   ) + chart_theme
 
@@ -156,9 +157,9 @@ ggsave(file.path(figure_dir, "week9_price_gaps_top10.png"), price_gap_plot,
        width = 14, height = 9, units = "in", dpi = 180, bg = "white")
 ggsave(file.path(figure_dir, "week9_price_gaps_top10.pdf"), price_gap_plot,
        width = 14, height = 9, units = "in", device = "pdf", useDingbats = FALSE)
-ggsave(file.path(figure_dir, "week9_airbnb_vs_active_bonds_2026q2.png"), rental_count_plot,
+ggsave(file.path(figure_dir, paste0("week9_airbnb_vs_active_bonds_", quarter_slug, ".png")), rental_count_plot,
        width = 14, height = 9, units = "in", dpi = 180, bg = "white")
-ggsave(file.path(figure_dir, "week9_airbnb_vs_active_bonds_2026q2.pdf"), rental_count_plot,
+ggsave(file.path(figure_dir, paste0("week9_airbnb_vs_active_bonds_", quarter_slug, ".pdf")), rental_count_plot,
        width = 14, height = 9, units = "in", device = "pdf", useDingbats = FALSE)
 
 # These named plots remain available in RStudio after sourcing the script.
@@ -166,5 +167,5 @@ if (interactive()) {
   print(price_gap_plot)
   print(rental_count_plot)
 }
-message("Saved both charts as PNG and PDF in output/figures/.")
+message("Saved both charts as PNG and PDF in ", figure_dir, ".")
 message("To display a chart in RStudio, run print(price_gap_plot) or print(rental_count_plot).")

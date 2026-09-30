@@ -6,6 +6,30 @@ This project investigates the Christchurch rental market using publicly availabl
 
 The project is being developed progressively across the required deliverables. The repository will be updated as each stage is completed.
 
+## Deliverable 7: Automated Monthly Update
+
+From the project root, after restoring packages and supplying the existing local raw inputs:
+
+```sh
+Rscript run_pipeline.R
+```
+
+Or, in the RStudio Console:
+
+```r
+source("run_pipeline.R")
+results <- run_pipeline()
+View(results$monthly_summary)
+```
+
+The controller downloads the July and August 2026 New Zealand summary listings when missing, reuses the existing team scripts in dependency order, updates SA2 2019 integration and SQLite tables, regenerates plots, and runs validation. Settings and verified download URLs are in `config/automation.R` and `config/airbnb_sources.csv`.
+
+The earlier October 2025-June 2026 `listings_YYYY_MM.csv` files and the configured raw tenancy file must already be in `data/raw/`. These local datasets are not distributed by Git. New uncached coordinates need a Koordinates key in the local, ignored `.Renviron`; restart R after configuring it. Never commit the key.
+
+New results are isolated in `output/week11/2025-10_to_2026-08/` and `data/processed/week11/2025-10_to_2026-08/`. The current tenancy source only covers through April-June 2026, despite its filename: July/August Airbnb plots are updated, but no Q3 tenancy comparison is fabricated. Read the generated `RUN_SUMMARY.md` and the coverage table before presenting.
+
+See [the detailed run, code and presentation guide](Deliverables_Documentations/Week11_Automation_Guide.md) for exact RStudio steps, the 60-check validation evidence, file locations and explanations. These are on-demand local commands, not scheduled runs or configured GitHub Actions.
+
 ---
 
 ## Project Objectives

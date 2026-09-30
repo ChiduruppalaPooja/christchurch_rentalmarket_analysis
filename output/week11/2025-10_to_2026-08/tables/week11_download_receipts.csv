@@ -1,0 +1,3 @@
+month,scrape_date,source_url,local_file,md5,action,provenance
+2026-07,2026-07-12,https://data.insideairbnb.com/new-zealand/2026-07-12/visualisations/listings.csv,data/raw/listings_2026_07.csv,2ddbbb5b6928b379e07d22eddf3de4a8,local_file,official_download_checksum_verified
+2026-08,2026-08-13,https://data.insideairbnb.com/new-zealand/2026-08-13/visualisations/listings.csv,data/raw/listings_2026_08.csv,4389fa8ead495ac782169d491e3b3341,local_file,official_download_checksum_verified
