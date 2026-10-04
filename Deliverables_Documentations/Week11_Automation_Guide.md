@@ -50,7 +50,7 @@ On Sahil's Mac, the answer should be:
 ```text
 /Users/sahilmann/Documents/DATA422/christchurch_rentalmarket_analysis
 ```
-
+This output will differ for each team member but should contain at least the project root "christchurch_rentalmarket_analysis"
 Do not type the `>` prompt itself. Do not open a new empty RStudio project. Do not run the old Sahil_Lab_Run.R or R/10_run_week10.R for this new deliverable: those are earlier workflows.
 
 ## 4. Run it in RStudio first
@@ -223,6 +223,7 @@ The names inside `stage()` are workflow labels. They do not renumber the existin
 File 01 is not an extra requirement before the controller: it was the earlier single-month exploration. File 02 is the reusable monthly preparation/cleaning stage. Do not clean July and August manually in file 01 first.
 
 ### Walk through the controller from top to bottom
+These steps explain the process that the file "run_pipeline.R" goes through, and do not need to be run independently. This is only to add clarity to the implementation of the automation.
 
 1. `source("R/helpers/automation_helpers.R")` loads reusable helper functions.
 2. `run_pipeline <- function(...)` defines the procedure. `end_month` is an optional parameter; the default comes from configuration. `force = FALSE` permits reuse.
