@@ -74,7 +74,7 @@ There can be a lot of printed inspection output on the first run because the exi
 
 The warning about missing tenancy quarters is expected for the current source file. It is explained in section 9. An `Error:` is different: stop and investigate; do not present old files as the new run's successful results.
 
-### The command-line version for the tutor
+### The command-line version 
 
 1. Click RStudio's **Terminal** tab, next to Console. If it is absent, choose Tools, Terminal, New Terminal.
 2. On Sahil's Mac, type this first to select the project folder:
@@ -341,24 +341,16 @@ View(database_preview)
 
 This opens the database read-only, lists its tables, reads ten comparison rows and closes the connection. It does not rerun the API or modify the database.
 
-## 11. What to demonstrate to the tutor, in order
+## 11. A quick walk-through, in order
 
-1. Open run_pipeline.R and config/automation.R. Explain that the date range is a parameter, not eleven hand-written runs.
-2. Open config/airbnb_sources.csv. Point out summary listings.csv, New Zealand, and the two exact scrape dates.
-3. Run `Rscript run_pipeline.R` in Terminal. Wait for SUCCESS. Explain any REUSE records rather than claiming every stage was recomputed.
-4. In Console, use the source-and-function version if you need fresh Global Environment tables. Open monthly_results and point out July and August.
-5. Open the monthly price, count and distribution PNGs. Explain what the axes and missing-price gap mean.
-6. Open coverage_check and explain the absent Q3 tenancy data.
-7. Show run_steps, sanity_checks and the real_example calculation. Explain that the total 60 checks include small synthetic tests and independent checks of real saved data.
-8. Show the team's Trello update and the automation commit on the GitHub sahil branch. Publishing a personal branch is separate from merging it into staging: ask the team to review the changes before that merge.
+1. Open run_pipeline.R and config/automation.R. The date range is a parameter, not eleven hand-written runs.
+2. Open config/airbnb_sources.csv. 
+3. Run `Rscript run_pipeline.R` in Terminal. Wait for SUCCESS. Check for any REUSE records rather than assuming every stage was recomputed.
+4. In Console, use the source-and-function version if you need fresh Global Environment tables. Open monthly_results and look at July and August.
+5. Open the monthly price, count and distribution PNGs. What does the axes and missing-price gap mean?
+6. Open coverage_check
+7. Show run_steps, sanity_checks and the real_example calculation. See that the total 60 checks include small synthetic tests and independent checks of real saved data.
 
-### A short explanation to practise
-
-"For this deliverable, we automated our existing R pipeline. Instead of running each script manually, one command reads the configuration and runs the stages in dependency order. It downloads the July and August New Zealand summary listings when needed, filters Christchurch, applies our existing cleaning, adds SA2 2019 geography and updates the database and plots.
-
-We preserve one row per listing per month, but give each listing one representative price in the quarterly comparisons. We check whether inputs or code changed before reusing saved work, and run all validation checks each time.
-
-The updated dataset contains 35,796 listing-month records across eleven months. July's observed median is $227 and August's is $224. The current tenancy source only covers through June, so the pipeline identifies that limitation and does not fabricate a Q3 rent comparison. All 60 checks passed."
 
 ## 12. What teammates need, and what belongs on GitHub
 
