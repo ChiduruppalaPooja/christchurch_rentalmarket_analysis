@@ -25,3 +25,9 @@ data/processed/
 # Local execution logs and status; tables, figures and reports remain shareable.
 output/week11/**/logs/
 output/week11/**/run_status.rds
+output/**/logs/
+output/**/run_status.rds
+# Local environment and secrets
+.env
+.env.*
+!.Renviron.example

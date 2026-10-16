@@ -2,561 +2,140 @@
 
 ## Overview
 
-This project investigates the Christchurch rental market using publicly available housing and rental data. The project focuses on building a reproducible data-wrangling workflow in R, from raw data acquisition and cleaning through to data integration, analysis, and visualisation.
+This project analyses Christchurch's rental market using Airbnb listing snapshots, Tenancy Services rental-bond data, and geographic information. It develops a reproducible R workflow for data acquisition, cleaning, geographic integration, validation, analysis, and visualisation.
 
-The project is being developed progressively across the required deliverables. The repository will be updated as each stage is completed.
+The repository README provides the project overview and essential run instructions. Detailed implementation decisions, validation evidence, and deliverable-specific instructions are maintained in [`Deliverables_Documentations/`](Deliverables_Documentations/).
 
-## Deliverable 7: Automated Monthly Update
+## Quick start
 
-From the project root, after restoring packages and supplying the existing local raw inputs:
+The project uses **R 4.5.2**, RStudio, and [`renv`](https://rstudio.github.io/renv/).
 
-```sh
-Rscript run_pipeline.R
-```
+1. Clone the repository and open the `.Rproj` file in RStudio.
+2. Restore the R package environment:
 
-Or, in the RStudio Console:
+   ```r
+   renv::restore()
+   ```
 
-```r
-source("run_pipeline.R")
-results <- run_pipeline()
-View(results$monthly_summary)
-```
+3. Ensure the required local input files are available in `data/raw/` (see [Data requirements](#data-requirements)).
+4. Run the Deliverable 7 pipeline from the repository root:
 
-The controller downloads the July and August 2026 New Zealand summary listings when missing, reuses the existing team scripts in dependency order, updates SA2 2019 integration and SQLite tables, regenerates plots, and runs validation. Settings and verified download URLs are in `config/automation.R` and `config/airbnb_sources.csv`.
+   ```sh
+   Rscript run_pipeline.R
+   ```
 
-The earlier October 2025-June 2026 `listings_YYYY_MM.csv` files and the configured raw tenancy file must already be in `data/raw/`. These local datasets are not distributed by Git. New uncached coordinates need a Koordinates key in the local, ignored `.Renviron`; restart R after configuring it. Never commit the key.
+   Or run it from the RStudio Console:
 
-New results are isolated in `output/week11/2025-10_to_2026-08/` and `data/processed/week11/2025-10_to_2026-08/`. The current tenancy source only covers through April-June 2026, despite its filename: July/August Airbnb plots are updated, but no Q3 tenancy comparison is fabricated. Read the generated `RUN_SUMMARY.md` and the coverage table before presenting.
+   ```r
+   source("run_pipeline.R")
+   results <- run_pipeline()
+   View(results$monthly_summary)
+   ```
 
-See [the detailed run, code and presentation guide](Deliverables_Documentations/Week11_Automation_Guide.md) for exact RStudio steps, the 60-check validation evidence, file locations and explanations. These are on-demand local commands, not scheduled runs or configured GitHub Actions.
+For exact setup, run steps, expected outputs, validation details, and troubleshooting, see the [Week 11 Automation Guide](Deliverables_Documentations/Week11_Automation_Guide.md).
 
----
+## Data sources
 
-## Project Objectives
+- **Airbnb:** [Inside Airbnb](https://insideairbnb.com/) listing snapshots for October 2025–August 2026.
+- **Tenancy data:** [Tenancy Services](https://www.tenancy.govt.nz/) / MBIE rental-bond data.
+- **Geographic data:** Stats NZ SA2 2019 geography, with coordinate enrichment through the [Koordinates](https://koordinates.com/) Query API.
 
-The main objectives of this project are to:
+Airbnb snapshots and tenancy data are used at different time resolutions. The project documents the aggregation and join rules in its deliverable documentation. The configured tenancy source currently covers April–June 2026; the pipeline does not invent a later-quarter tenancy comparison.
 
-- acquire and work with relevant Christchurch rental-market datasets;
-- inspect and assess the quality of raw data;
-- apply transparent and reproducible data-cleaning procedures;
-- document the reasoning behind important cleaning decisions;
-- integrate rental and geographic information;
-- produce analysis-ready datasets;
-- generate useful summaries, tables, and visualisations;
-- maintain a reproducible R environment;
-- use Git and GitHub to track project development; and
-- develop an automated and reproducible workflow as the project progresses.
+## Data requirements and credentials
 
----
+Raw datasets are not distributed through Git. Before running the pipeline, place the required October 2025–June 2026 Airbnb files (`listings_YYYY_MM.csv`) and the configured tenancy source file in `data/raw/`.
 
-## Data Sources
+The pipeline downloads the configured July and August 2026 Airbnb summary listings when they are missing. The source URLs are recorded in `config/airbnb_sources.csv`, and pipeline settings are in `config/automation.R`.
 
-The project uses multiple publicly available data sources.
+If the pipeline needs to query uncached coordinates, a Koordinates API key may be required in your local `.Renviron` file. Restart R after configuring it. **Never commit `.Renviron`, API keys, or other credentials.**
 
-### Airbnb
-
-Airbnb listing information is obtained from **Inside Airbnb**. The data provide information about short-term accommodation listings, including listing characteristics, location, pricing, room type, reviews, and availability.
-
-The exact datasets, download dates, variables used, and processing steps will be recorded as the project develops.
-
-### Tenancy Services
-
-Rental information is obtained from **Tenancy Services / MBIE**. The data provide information about residential rental bonds and rental prices across geographic areas and time periods.
-
-The Tenancy dataset will be independently inspected and cleaned as part of the project. Cleaning decisions will be documented rather than assumed from previous versions of the data.
-
-### Geographic Data
-
-Geographic information will be incorporated where required to support spatial analysis and joining between datasets. The relevant sources, geographic identifiers, APIs, and join decisions will be documented when this stage is completed.
-
----
-
-## Repository Structure
-
-The project is organised as follows:
+## Repository structure
 
 ```text
 christchurch_rentalmarket_analysis/
-│
+├── config/                         # Automation settings and source URL register
 ├── data/
-│   ├── raw/
-│   │   └── Original/raw datasets
-│   │
-│   └── processed/
-│       └── Cleaned and transformed datasets
-│
-├── R/
-│   └── R scripts for importing, cleaning,
-│       transforming and analysing data
-│
-├── output/
-│   ├── figures/
-│   │   └── Generated visualisations
-│   │
-│   └── tables/
-│       └── Generated tables and summaries
-│
-├── renv/
-│   └── Project-specific R environment
-│
+│   ├── raw/                        # Local source datasets; not committed
+│   └── processed/                  # Generated analytical datasets
+├── Deliverables_Documentations/    # Detailed deliverable documentation
+├── output/                         # Figures, summaries, and run outputs
+├── R/                              # R pipeline stages and reusable helpers
+│   └── helpers/
+├── tests/                          # Validation and test code
+├── run_pipeline.R                  # Deliverable 7 entry point
+├── renv.lock                       # Recorded R package versions
+├── .Rprofile                       # renv project activation
 ├── .gitignore
-├── .Rprofile
-├── renv.lock
 ├── christchurch_rentalmarket_analysis.Rproj
 └── README.md
 ```
 
-### Directory purposes
+Generated files and exact subdirectories depend on which stages have been run. Local raw data, credentials, and large generated datasets may be excluded from version control. The `renv/` infrastructure may also be present in the repository.
 
-**`data/raw/`**
+## Workflow and outputs
 
-Contains original source data. Raw data should remain unchanged so that the complete cleaning process can be reproduced.
+The project follows this general sequence:
 
-**`data/processed/`**
+**Source data → inspection and cleaning → transformation → geographic enrichment → integration → validation → analysis and visualisation.**
 
-Contains datasets generated after cleaning and transformation.
+The Deliverable 7 controller runs the existing R stages in dependency order, refreshes the relevant integrated datasets and SQLite tables, regenerates plots, and writes validation/run-summary outputs. Results from that pipeline are isolated under:
 
-**`R/`**
+- `data/processed/week11/2025-10_to_2026-08/`
+- `output/week11/2025-10_to_2026-08/`
 
-Contains the project's R scripts. Scripts will be organised according to the stages of the data-wrangling and analysis workflow.
+Review the generated `RUN_SUMMARY.md` and coverage table before presenting results. Results can change when the inputs or pipeline are updated.
 
-**`output/figures/`**
+### Latest documented pipeline run
 
-Contains figures and visualisations generated by the project.
+The documented run processed 11 monthly snapshots from October 2025 through August 2026, comprising 35,796 listing-month observations and 4,264 distinct listings. It generated five updated plots and passed 60 validation checks. The median nightly prices reported for July and August 2026 were NZ$227 and NZ$224, respectively.
 
-**`output/tables/`**
+These figures describe that run and should be refreshed from the generated run summary after a subsequent run. The pipeline is run **on demand**; scheduled execution and GitHub Actions are not currently configured.
 
-Contains generated tables and other analytical summaries.
+## Git and branch protection
 
-**`renv/`**
+The team uses Git and GitHub for version control. The repository has an **Active** ruleset named `Pushes to the main branch`, targeting `main`. As currently configured, it restricts updates and deletions for actors who are not on the bypass list. The displayed bypass list includes the Repository admin role and the `ChiduruppalaPooja` user.
 
-Contains the project-specific `renv` infrastructure. The local package library is ignored by Git.
 
-**`renv.lock`**
+## Deliverable documentation
 
-Records the R packages and versions used by the project so that the environment can be reproduced.
+Use the relevant document for implementation details rather than duplicating them in this README.
 
----
+- [Week 9 Geographic Integration](Deliverables_Documentations/Week_9_Geographic_Integration.md) — geographic enrichment, schemas, joins, and validation.
+- [Week 10 Design Principles](Deliverables_Documentations/Week_10_Design_Principles.md) — design principles, pipeline structure, and limitations.
+- [Week 10 Change Log](Deliverables_Documentations/Week_10_Change_Log.md) — code changes, rationale, and before/after results.
+- [Week 10 Run and Presentation Guide](Deliverables_Documentations/Week_10_Run_And_Present.md) — execution and presentation guidance.
+- [Week 11 Automation Guide](Deliverables_Documentations/Week11_Automation_Guide.md) — pipeline execution, output locations, validation evidence, and troubleshooting.
 
-# Development Environment
+## Reproducibility
 
-The project is developed in **R 4.5.2** using RStudio.
+- Keep raw source data unchanged.
+- Implement cleaning and transformation in code rather than manually editing source files.
+- Record package dependencies in `renv.lock`; use `renv::snapshot()` after intentional package changes.
+- Validate generated outputs and review Git changes before committing.
+- Keep credentials and local-only data out of version control.
 
-Package dependency management is handled using **`renv`**.
+## Current status
 
-The project was initialised with `renv`, and the package environment is recorded in `renv.lock`.
+- **Deliverable 1:** R project and package environment established.
+- **Deliverables 2–4:** Refer to their current implementation and documentation status; do not infer completion from this summary.
+- **Deliverable 5:** SA2 2019 geographic integration and comparison tables implemented and validated locally.
+- **Deliverable 6:** Coding-practice changes, design documentation, and 22 hand-checkable sanity tests implemented; team review/presentation was still pending in the last documented status.
+- **Deliverable 7:** On-demand automated pipeline implemented and validated locally, with 60 passing validation checks in the documented run.
+- **Deliverable 8:** Final project consolidation and submission.
 
-To restore the project environment after cloning the repository:
+## Contributors
 
-```r
-renv::restore()
-```
+Project contributors and responsibilities are maintained through the team's repository and deliverable records. Main contributors:
+1. Pooja Chiduruppala - ChiduruppalaPooja
+2. Sahil Mann - sahil-mann
+3. Claudia Thompson - claudia-thompson-101
 
-When packages are added or updated, the lockfile should be updated using:
+## References
 
-```r
-renv::snapshot()
-```
+- [Inside Airbnb](https://insideairbnb.com/)
+- [Tenancy Services](https://www.tenancy.govt.nz/) / Ministry of Business, Innovation and Employment (MBIE)
+- [Koordinates](https://koordinates.com/)
+- Stats NZ — Statistical Area 2 2019 geographic definitions
 
-This allows another user to reproduce the project's R package environment rather than relying on packages installed globally on their computer.
-
----
-
-# Git and Version Control
-
-Git and GitHub are used to maintain the project and track changes throughout development.
-
-The repository was initialised as an R project and configured with `renv`.
-
-The `.gitignore` file excludes local and generated files that should not be committed, including:
-
-- RStudio project-specific files;
-- R history and workspace files;
-- the local `renv` package library; and
-- other temporary environment files.
-
-Important project configuration files such as `renv.lock`, `.Rprofile`, and the R project file are retained in version control.
-
-Development will continue through incremental commits as each deliverable is completed.
-
----
-
-# Data-Wrangling Workflow
-
-The intended workflow is:
-
-```text
-Raw Data
-   │
-   ▼
-Data Acquisition
-   │
-   ▼
-Initial Inspection
-   │
-   ▼
-Data Quality Assessment
-   │
-   ▼
-Cleaning
-   │
-   ├── Airbnb
-   │
-   └── Tenancy Services
-   │
-   ▼
-Transformation
-   │
-   ▼
-Geographic Integration
-   │
-   ▼
-Dataset Joins
-   │
-   ▼
-Analysis-Ready Data
-   │
-   ▼
-Analysis
-   │
-   ▼
-Tables and Visualisations
-```
-
-The workflow is designed so that transformations can be traced from the original data through to the final analytical outputs.
-
----
-
-# Data Cleaning and Cleaning Decisions
-
-Data cleaning is treated as an explicit analytical step rather than simply modifying values until the dataset appears tidy.
-
-For each important cleaning decision, the project will consider:
-
-1. **What was observed in the raw data?**
-2. **What problem or inconsistency was identified?**
-3. **What action was taken?**
-4. **Why was that action appropriate?**
-5. **How could the decision affect subsequent analysis?**
-
-Where a decision changes the meaning, interpretation, or analytical population of the data, the rationale will be explicitly documented.
-
----
-
-## Airbnb Cleaning
-
-The Airbnb data will be assessed for issues including:
-
-- missing values;
-- duplicate observations;
-- variable types;
-- date and time representations;
-- price values;
-- availability information;
-- room-type categories;
-- geographic fields;
-- unnecessary variables; and
-- historical versus current listing observations.
-
-Where duplicate observations are encountered, the project will distinguish between genuine repeated observations over time and records that represent unwanted duplication.
-
-Cleaning decisions will be made based on the analytical purpose of the dataset rather than automatically removing all repeated listing IDs.
-
----
-
-## Tenancy Services Cleaning
-
-The Tenancy Services dataset will be independently inspected before cleaning.
-
-Areas considered include:
-
-- missing-value representations;
-- `NULL` values;
-- sentinel values such as `-99`;
-- data types;
-- geographic identifiers;
-- rental-period information;
-- rental statistics;
-- variables required for analysis; and
-- variables that are unnecessary for the project's analytical questions.
-
-Special values will not automatically be treated as ordinary missing data without first considering what they represent.
-
-The final Tenancy cleaning decisions will be documented as part of the project's data-wrangling workflow.
-
----
-
-# Deliverables
-
-The repository will be developed progressively through the project deliverables.
-
-## Deliverable 1 — Repository and Development Environment
-
-### Status: Complete
-
-The initial development environment has been established.
-
-Completed components include:
-
-- GitHub repository created;
-- repository cloned locally;
-- RStudio project created;
-- `renv` initialised;
-- project-specific R environment established;
-- `renv.lock` generated;
-- `.gitignore` configured; and
-- initial project directory structure created.
-
----
-
-## Deliverable 2 — Initial Data Acquisition and Exploration
-
-### Status: To be completed / documented
-
-This stage covers the acquisition and initial exploration of the required rental-market data.
-
-The project will document:
-
-- data sources;
-- download/acquisition procedures;
-- file formats;
-- dataset dimensions;
-- variable descriptions;
-- initial data-quality observations; and
-- exploratory observations.
-
-The original datasets will be retained in `data/raw/`.
-
----
-
-## Deliverable 3 — Extended Airbnb Data and Reproducible Processing
-
-### Status: To be completed / documented
-
-This stage will extend the Airbnb dataset/workflow and establish reproducible processing.
-
-The project will document:
-
-- additional Airbnb data;
-- acquisition procedures;
-- data integration;
-- transformations;
-- reproducibility of the processing workflow; and
-- relevant exploratory outputs.
-
----
-
-## Deliverable 4 — Data Cleaning and Cleaning Decisions
-
-### Status: In progress
-
-This stage focuses on cleaning the rental datasets and documenting the decisions made during cleaning.
-
-The main datasets considered are:
-
-- Airbnb; and
-- Tenancy Services.
-
-The cleaning process will include:
-
-- raw-data inspection;
-- data-quality checks;
-- missing-value assessment;
-- duplicate assessment;
-- variable selection;
-- data-type corrections;
-- value standardisation where justified;
-- transformation of fields required for analysis; and
-- documentation of the reasoning behind important decisions.
-
-The cleaned datasets will be stored separately from the raw source data.
-
----
-
-## Deliverable 5 — Geographic Data and Dataset Integration
-
-### Status: Complete and validated locally using SA2 2019
-
-This stage connects Airbnb coordinates to Stats NZ Statistical Area 2 2019 codes through the Koordinates Query API, aligns monthly Airbnb snapshots with quarterly tenancy records, and creates database-ready comparison tables. The 2019 geography is used because Tenancy Services documents that the rental bond data use SA2-2019 area definitions.
-
-The implementation includes:
-
-- `R/00_setup_packages.R` - one-time restoration of the packages recorded in `renv.lock`;
-- `R/05_query_geography.R` - resumable API queries and SA2 enrichment;
-- `R/06_integrate_rental_data.R` - time alignment, aggregation, validation, and joins;
-- `R/07_build_database.R` - optional SQLite database creation;
-- `R/08_week9_plots.R` - two presentation charts from the saved Week 9 summaries; and
-- `Deliverables_Documentations/Week_9_Geographic_Integration.md` - source, schema, join, validation, and run documentation.
-
-The comparison join uses `sa2_code + comparison_quarter`. Airbnb and tenancy data are first reduced to one row per key so that the join does not create a misleading many-to-many result. Unmatched coordinates and keys are saved separately for review.
-
-The validated run assigned an SA2 code to all `28,795` monthly Airbnb rows (`100%` coordinate match). The Week 10 correction gives each eligible listing one representative price per quarter and excludes ambiguous listing-quarter area assignments from spatial comparisons. There are now `510` eligible Airbnb SA2-quarter keys, `408` matched rows (`80%`) and `102` Airbnb-only keys. See the Week 10 design document for the current price definition and review policy.
-
-The processed datasets and SQLite database remain local under `data/processed/` and are not committed to GitHub.
-
-To create the two Week 9 presentation charts after file 06, run:
-
-```r
-source("R/08_week9_plots.R")
-print(price_gap_plot)
-print(rental_count_plot)
-```
-
-PNG and PDF copies are saved in `output/figures/`. The first chart ranks the ten largest median quarterly nightly price gaps. The second compares unique Airbnb listings with active tenancy bonds in April-June 2026 for the ten matched areas with the most Airbnb listings. Figure captions explain missing prices, selection, and the limitations of bond counts.
-
----
-
-## Deliverable 6 — Coding Practices, Sanity Checks and Design
-
-### Status: Implemented and tested locally; team review and lab presentation pending
-
-The coordinator's repeated-listing concern is addressed: each listing contributes one within-quarter median to its area's median, rather than each monthly row having equal weight. Monthly history is preserved. Ambiguous locations are flagged separately, and missing prices are not imputed.
-
-Open the project `.Rproj` file and run from the RStudio Console:
-
-```r
-source("R/10_run_week10.R")
-View(sanity_checks)
-View(sanity_example)
-```
-
-This runs 22 hand-checkable tests, rebuilds the corrected tables, SQLite and charts, and independently validates saved results. It needs the two prepared local inputs but no network or API credential. New shared parameters are in `R/pipeline_config.R`; pure calculation/assertion functions are in `R/helpers/integration_helpers.R`.
-
-- [Nine-section design principles](Deliverables_Documentations/Week_10_Design_Principles.md): inputs, outputs, pipeline steps, lecture-aligned coding strategies, limitations and the explicit OpenAI Codex disclosure.
-- [High-level change log](Deliverables_Documentations/Week_10_Change_Log.md): changes, reasons, before/after results and requirement mapping.
-- [Run and presentation guide](Deliverables_Documentations/Week_10_Run_And_Present.md): exact commands, objects to show, speaking notes and remaining team tasks.
-
-The current Central whole-period median is NZ$237 across 151 priced eligible listings. The price-gap chart still ranks Wigram South first at approximately NZ$288.29 per night. Both calculations use the documented equal-listing method and exclusions; missing prices in December-February remain a limitation. Small output tables and presentation charts are retained in Git as review evidence; large data, the database and credentials stay local.
-
----
-
-## Deliverable 7 — Automated Wrangling and CI/CD
-
-### Status: Planned
-
-The project will be extended into a reproducible and automated workflow.
-
-Planned work includes:
-
-- automating the data-wrangling process;
-- creating the required execution workflow;
-- configuring GitHub Actions;
-- running automated checks;
-- validating reproducibility; and
-- documenting the automation process.
-
----
-
-## Deliverable 8 — Final Project
-
-### Status: Planned
-
-The final stage will consolidate the work into a polished, reproducible GitHub project.
-
-The final repository is expected to contain:
-
-- a complete README;
-- organised source code;
-- documented data sources;
-- documented cleaning decisions;
-- reproducible package dependencies;
-- processed datasets and/or reproducible processing steps;
-- analysis outputs;
-- visualisations;
-- automated workflow components;
-- clear Git history; and
-- instructions allowing another user to understand and reproduce the project.
-
----
-
-# Reproducibility
-
-Reproducibility is a core principle of the project.
-
-The intended lineage of an analytical result is:
-
-```text
-Source
-  ↓
-Raw Data
-  ↓
-Import Script
-  ↓
-Cleaning Script
-  ↓
-Processed Data
-  ↓
-Transformation / Integration
-  ↓
-Analysis
-  ↓
-Output
-```
-
-Raw source data should not be manually altered.
-
-Instead, cleaning and transformation should be implemented through R code so that processed datasets can be regenerated when required.
-
-The `renv.lock` file records the package environment used by the project.
-
----
-
-# Quality Assurance
-
-Before a stage of the project is considered complete, the following checks should be performed where applicable:
-
-- [ ] Source data identified and documented
-- [ ] Raw data preserved
-- [ ] Data types checked
-- [ ] Missing values assessed
-- [ ] Duplicate records assessed
-- [ ] Cleaning decisions documented
-- [ ] Transformations validated
-- [ ] Dataset dimensions checked before and after major operations
-- [ ] Join keys validated
-- [ ] Unexpected unmatched records investigated
-- [ ] Tables and figures checked
-- [ ] R scripts execute successfully
-- [ ] Required packages are recorded in `renv.lock`
-- [ ] Git changes are reviewed before committing
-- [ ] Repository remains reproducible
-
----
-
-# Current Project Status
-
-The project repository and R development environment have been established.
-
-The next stages will progressively add:
-
-1. source datasets;
-2. data acquisition and exploration scripts;
-3. cleaning and transformation scripts;
-4. documented cleaning decisions;
-5. geographic information;
-6. integrated datasets;
-7. analysis and visualisations;
-8. automated workflows; and
-9. final project documentation.
-
-This README is intentionally maintained as a **living project document**. The deliverable sections and project structure will be updated as new work is completed.
-
----
-
-# Contributors
-
-Contributors and their respective project responsibilities will be documented as the project develops.
-
----
-
-# References and Data Sources
-
-The final version of the project will provide complete references for all external datasets, APIs, libraries, and other resources used.
-
-Primary data sources include:
-
-- Inside Airbnb
-- Tenancy Services / MBIE
-- Relevant geographic data sources and APIs
-
-Source links, access dates, and dataset-specific information will be added as the corresponding deliverables are completed.
+The configured Airbnb source URLs are recorded in `config/airbnb_sources.csv`; consult the deliverable documentation for dataset-specific sources and processing decisions.
