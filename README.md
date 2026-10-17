@@ -58,11 +58,15 @@ christchurch_rentalmarket_analysis/
 ├── data/
 │   ├── raw/                        # Local source datasets; not committed
 │   └── processed/                  # Generated analytical datasets
-├── Deliverables_Documentations/    # Detailed deliverable documentation
+├── Docs/ 
+│   ├── deliverables/               # Detailed deliverable documentation
+│   └── project/                  # Detailed project level documentation
 ├── output/                         # Figures, summaries, and run outputs
-├── R/                              # R pipeline stages and reusable helpers
-│   └── helpers/
-├── tests/                          # Validation and test code
+├── R/                              # R pipeline stages and reusable 
+│   ├── helpers/               
+│   └── test/  
+├── renv/
+├── tests/                 
 ├── run_pipeline.R                  # Deliverable 7 entry point
 ├── renv.lock                       # Recorded R package versions
 ├── .Rprofile                       # renv project activation
