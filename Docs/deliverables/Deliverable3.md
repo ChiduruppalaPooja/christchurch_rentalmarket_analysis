@@ -4,7 +4,6 @@
 
 | Item | Details |
 |---|---|
-| Course | DATA422 |
 | Deliverable | 3 |
 | Study period | October 2025 – June 2026 |
 | Geographic scope | Christchurch City, New Zealand |
@@ -21,7 +20,7 @@ The objective of Deliverable 3 was to extend the initial Airbnb data exploration
 
 The work involved downloading and loading the monthly Airbnb listing datasets, filtering the data to Christchurch City, adding a month-and-year identifier, preparing and combining the monthly datasets, examining missing values, producing summary statistics, and saving the resulting dataset for further analysis.
 
-The deliverable also involved reproducing the previous week's no-code workflow and plots in R or Python, presenting the updated Trello board, and reflecting on the team's project progress and management.
+The deliverable also involved reproducing the previous week's no-code workflow and plots in R, presenting the updated Trello board, and reflecting on the team's project progress and management.
 
 The main processing script, `R/02_airbnb_combine.R`, implements the multi-month Christchurch data pipeline. It also incorporates cleaning decisions associated with Deliverable 4. The separate `R/01_airbnb_prepare.R` script handles the June 2026 snapshot and its individual data-quality checks.
 
@@ -294,7 +293,7 @@ The summary outputs include:
 
 ## 7. Reproduction of the Deliverable 2 Workflow and Plots
 
-The Deliverable 2 workflow and its plots were reproduced in R or Python as part of the extended analysis. The work connects the initial single-snapshot exploration to the wider multi-month Christchurch dataset.
+The Deliverable 2 workflow and its plots were reproduced in R as part of the extended analysis. The work connects the initial single-snapshot exploration to the wider multi-month Christchurch dataset.
 
 ### 7.1 Price distributions
 
@@ -316,7 +315,7 @@ The national comparison uses the national dataset to establish the top-decile th
 
 ### 7.4 Plot reproduction and interpretation
 
-Reproducing the earlier workflow in R or Python maintains continuity between Deliverables 2 and 3 while allowing the analysis to be incorporated into the project’s code-based workflow. The plots support comparisons of listing prices, review recency, and review-count rankings.
+Reproducing the earlier workflow in R maintains continuity between Deliverables 2 and 3 while allowing the analysis to be incorporated into the project’s code-based workflow. The plots support comparisons of listing prices, review recency, and review-count rankings.
 
 ## 8. Validation and Quality Assurance
 
@@ -399,13 +398,13 @@ The use of task tracking, shared code, and documented processing decisions suppo
 | Requirement | Implementation |
 |---|---|
 | Download the monthly datasets from October 2025 to June 2026 | Nine monthly New Zealand listing datasets were downloaded and used. |
-| Load a dataset into R or Python | The June 2026 snapshot is loaded in `R/01_airbnb_prepare.R`; the multi-month workflow loads the monthly datasets in `R/02_airbnb_combine.R`. |
+| Load a dataset into R | The June 2026 snapshot is loaded in `R/01_airbnb_prepare.R`; the multi-month workflow loads the monthly datasets in `R/02_airbnb_combine.R`. |
 | Filter to Christchurch and use the filtered data | Each monthly dataset is filtered to Christchurch City before concatenation. |
 | Add a month-and-year column | The `month_year` field is extracted from the input filenames. |
 | Prepare and concatenate all monthly datasets | The pipeline checks structural consistency and combines the nine filtered datasets using `bind_rows()`. |
 | Produce summary statistics and missing-value counts | The summary workflow generates numerical, categorical, missing-value, room-type, neighbourhood, and monthly snapshot summaries. |
 | Save the combined dataset to a new file | The processed dataset is saved as `data/processed/airbnb_christchurch_oct2025_jun2026_clean.csv`. |
-| Reproduce the previous no-code workflow and plots | The Deliverable 2 analyses were reproduced in R or Python for price distributions, review recency, and review-count rankings. |
+| Reproduce the previous no-code workflow and plots | The Deliverable 2 analyses were reproduced in R for price distributions, review recency, and review-count rankings. |
 | Present the updated Trello board and reflect on project management | The updated board was presented and the team reflected on its project progress and management. |
 
 ## 13. Limitations
@@ -432,4 +431,4 @@ Deliverable 3 extended the initial Airbnb exploration into a multi-month R-based
 
 The recorded results contain 28,795 listing-month observations, 4,117 distinct listing IDs, and 2,103 distinct host IDs. The summary analysis describes the numerical and categorical characteristics of the dataset, while the missing-value investigation identifies the complete absence of prices in three consecutive monthly snapshots as the main limitation for price comparisons.
 
-The previous no-code workflow and plots were reproduced in R or Python, and the team presented its updated Trello board and reflected on project progress and management. Together, the processing scripts, summary tables, cleaned dataset, and documentation establish the workflow and decisions used to complete Deliverable 3.
+The previous no-code workflow and plots were reproduced in R, and the team presented its updated Trello board and reflected on project progress and management. Together, the processing scripts, summary tables, cleaned dataset, and documentation establish the workflow and decisions used to complete Deliverable 3.

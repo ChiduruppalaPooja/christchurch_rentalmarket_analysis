@@ -10,7 +10,7 @@ The dataset was obtained from [Inside Airbnb — Get the Data](https://insideair
 
 - **Dataset:** `listings.csv`
 - **Geographic coverage:** New Zealand
-- **Reported snapshot date:** 19 June 2026 — verify against the original downloaded file or download record.
+- **Reported snapshot date:** 19 June 2026 
 - **Format:** CSV
 - **Storage:** The raw dataset was stored locally because of its file size and was not committed to the GitHub repository.
 
@@ -20,7 +20,7 @@ Each row represents an Airbnb listing in the downloaded snapshot. The data descr
 
 ## 3. Dataset Structure and Column Definitions
 
-The dataset contains listing identifiers, host details, geographic information, pricing, availability, and review-related variables. The following descriptions explain the fields used in the downloaded dataset. Data types shown here are conceptual and should be checked against the types assigned when the CSV is imported into KNIME.
+The dataset contains listing identifiers, host details, geographic information, pricing, availability, and review-related variables. The following descriptions explain the fields used in the downloaded dataset. 
 
 | Field                            | Description                                                                          | Conceptual data type         |
 | -------------------------------- | ------------------------------------------------------------------------------------ | ---------------------------- |

@@ -131,21 +131,8 @@ After pushing their changes, team members can integrate their work into `staging
 
 Before integrating changes, members should check that they are working on the correct branch and that their changes do not unintentionally overwrite other contributions.
 
-### 5.4 Repository Management and Access Control
 
-The team uses a centralised repository-management arrangement to control changes to the main project branch.
-
-- **Pooja — GitHub Repository Manager:** Pooja manages the repository and is the only team member permitted to push directly to `main`.
-- **Sahil — Team Contributor:** Sahil contributes changes through `staging`.
-- **Claudia — Team Contributor:** Claudia contributes changes through `staging`.
-- **`staging` — Shared Integration Branch:** Team members use this branch to contribute and combine their work before it is incorporated into `main`.
-- **`main` — Primary Project Branch:** This branch contains the final, integrated project version. Updates are managed by Pooja.
-
-This arrangement separates contribution from final integration. Sahil and Claudia can contribute to shared project development without directly modifying `main`, while Pooja maintains responsibility for updates to the primary branch.
-
-Repository permissions and branch protection rules determine whether these restrictions are technically enforced by GitHub. Permission to push directly to `main` is distinct from permission to merge a pull request into `main`. The repository settings should be checked to confirm that the configured permissions match the team's intended workflow.
-
-### 5.5 Rationale for the Branching Strategy
+### 5.4 Rationale for the Branching Strategy
 
 The branching strategy supports collaboration and project quality in several ways:
 

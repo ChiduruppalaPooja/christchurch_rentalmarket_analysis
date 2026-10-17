@@ -2,7 +2,6 @@
 
 | Project detail | Description |
 |---|---|
-| Course | DATA422 |
 | Deliverable | 4 — Data Cleaning and Cleaning Decisions |
 | Study period | October 2025 – June 2026 |
 | Airbnb processing | `R/02_airbnb_combine.R` |

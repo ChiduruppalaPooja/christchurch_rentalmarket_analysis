@@ -2,7 +2,6 @@
 
 | Item | Details |
 |---|---|
-| Course | DATA422 |
 | Deliverable | 7 — Automation |
 | Study period | October 2025–August 2026 |
 | Main command | `Rscript run_pipeline.R` |
