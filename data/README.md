@@ -19,7 +19,3 @@ This keeps the monthly input and does not overwrite an existing `listings.csv`. 
 The pipeline creates cleaned datasets, geographic lookup data and SQLite under `data/processed/`. A local Koordinates key is needed only for geographic coordinates not already covered by the lookup cache. Keep credentials in the ignored `.Renviron` file.
 
 Follow [the automation guide](../Docs/project/automation_guide.md) for package setup, execution and output interpretation. Keep source files unchanged; regenerate processed files through the R scripts.
-
-## Historical KNIME workflow
-
-The KNIME archive under `Docs/project/` is a separate historical deliverable and contains saved node tables. It is not an R pipeline input. The team should review whether it needs a data-free re-export under the course's data-publication rules.
