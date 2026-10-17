@@ -4,7 +4,7 @@
 
 This project analyses Christchurch's rental market using Airbnb listing snapshots, Tenancy Services rental-bond data, and geographic information. It develops a reproducible R workflow for data acquisition, cleaning, geographic integration, validation, analysis, and visualisation.
 
-The repository README provides the project overview and essential run instructions. Detailed implementation decisions, validation evidence, and deliverable-specific instructions are maintained in [`Deliverables_Documentations/`](Deliverables_Documentations/).
+The repository README provides the project overview and essential run instructions. Detailed implementation decisions, validation evidence, and deliverable-specific instructions are maintained in [`Docs/`](Docs/).
 
 ## Quick start
 
@@ -17,7 +17,7 @@ The project uses **R 4.5.2**, RStudio, and [`renv`](https://rstudio.github.io/re
    renv::restore()
    ```
 
-3. Ensure the required local input files are available in `data/raw/` (see [Data requirements](#data-requirements)).
+3. Ensure the required local input files are available in `data/raw/` (see [Data requirements](#data-requirements-and-credentials)). Leave `AIRBNB_INPUT` unset; the automated runner rejects this override. In R, use `Sys.unsetenv("AIRBNB_INPUT")`; in the terminal, use `unset AIRBNB_INPUT`.
 4. Run the Deliverable 7 pipeline from the repository root:
 
    ```sh
@@ -32,7 +32,7 @@ The project uses **R 4.5.2**, RStudio, and [`renv`](https://rstudio.github.io/re
    View(results$monthly_summary)
    ```
 
-For exact setup, run steps, expected outputs, validation details, and troubleshooting, see the [Week 11 Automation Guide](Deliverables_Documentations/Week11_Automation_Guide.md).
+For exact setup, run steps, expected outputs, validation details, and troubleshooting, see the [Week 11 Automation Guide](Docs/project/automation_guide.md).
 
 ## Data sources
 
@@ -44,7 +44,9 @@ Airbnb snapshots and tenancy data are used at different time resolutions. The pr
 
 ## Data requirements and credentials
 
-Raw datasets are not distributed through Git. Before running the pipeline, place the required October 2025–June 2026 Airbnb files (`listings_YYYY_MM.csv`) and the configured tenancy source file in `data/raw/`.
+Raw and processed datasets remain local and are not distributed through Git. Before running the pipeline, place the required October 2025–June 2026 Airbnb files (`listings_YYYY_MM.csv`) and the configured tenancy source file in `data/raw/`.
+
+The optional standalone `R/01_airbnb_prepare.R` needs the June 2026 summary CSV at `data/raw/listings.csv`. Copy the provided monthly June CSV, `data/raw/listings_2026_06.csv`, to that name locally, keeping the monthly original. This script is not required for the full automated pipeline.
 
 The pipeline downloads the configured July and August 2026 Airbnb summary listings when they are missing. The source URLs are recorded in `config/airbnb_sources.csv`, and pipeline settings are in `config/automation.R`.
 
@@ -57,7 +59,7 @@ christchurch_rentalmarket_analysis/
 ├── config/                         # Automation settings and source URL register
 ├── data/
 │   ├── raw/                        # Local source datasets; not committed
-│   └── processed/                  # Generated analytical datasets
+│   └── processed/                  # Generated analytical datasets; local only
 ├── Docs/ 
 │   ├── deliverables/               # Detailed deliverable documentation
 │   └── project/                  # Detailed project level documentation
@@ -75,7 +77,7 @@ christchurch_rentalmarket_analysis/
 └── README.md
 ```
 
-Generated files and exact subdirectories depend on which stages have been run. Local raw data, credentials, and large generated datasets may be excluded from version control. The `renv/` infrastructure may also be present in the repository.
+Generated files and exact subdirectories depend on which stages have been run. Raw and processed data and credentials remain local and are excluded from version control. The `renv/` infrastructure may also be present in the repository.
 
 ## Workflow and outputs
 
@@ -105,11 +107,12 @@ The team uses Git and GitHub for version control. The repository has an **Active
 
 Use the relevant document for implementation details rather than duplicating them in this README.
 
-- [Week 9 Geographic Integration](Deliverables_Documentations/Week_9_Geographic_Integration.md) — geographic enrichment, schemas, joins, and validation.
-- [Week 10 Design Principles](Deliverables_Documentations/Week_10_Design_Principles.md) — design principles, pipeline structure, and limitations.
-- [Week 10 Change Log](Deliverables_Documentations/Week_10_Change_Log.md) — code changes, rationale, and before/after results.
-- [Week 10 Run and Presentation Guide](Deliverables_Documentations/Week_10_Run_And_Present.md) — execution and presentation guidance.
-- [Week 11 Automation Guide](Deliverables_Documentations/Week11_Automation_Guide.md) — pipeline execution, output locations, validation evidence, and troubleshooting.
+- [Week 9 Geographic Integration](Docs/deliverables/Deliverable5.md) — geographic enrichment, schemas, joins, and validation.
+- [Week 10 Design Principles](Docs/deliverables/Deliverable_6_Design_Principles.md) — design principles, pipeline structure, and limitations.
+- [Week 10 Change Log](Docs/deliverables/Deliverable_6_Change_Log.md) — code changes, rationale, and before/after results.
+- [Week 10 D6 Runner](Docs/project/automation_guide.md#earlier-runner-d6) — offline execution from already prepared inputs.
+- [Week 11 Automation Guide](Docs/project/automation_guide.md) — pipeline execution, output locations, validation evidence, and troubleshooting.
+- [Final submission checks](Docs/project/final_submission_checks.md) — the staging corrections, verification results, and remaining review item.
 
 ## Reproducibility
 

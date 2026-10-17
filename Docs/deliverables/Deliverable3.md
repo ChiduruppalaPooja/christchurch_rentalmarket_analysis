@@ -421,9 +421,9 @@ The final combined dataset is a cleaned dataset rather than an untouched concate
 - `R/02_airbnb_combine.R` — Multi-month Christchurch filtering, labelling, concatenation, cleaning, and output generation.
 - `R/04_airbnb_summary.R` — Summary-table generation.
 - `R/pipeline_config.R` — Study-period and pipeline configuration.
-- `D2.md` — Initial single-snapshot exploration and no-code workflow.
-- `D4.md` — Cleaning decisions associated with the combined Christchurch dataset.
-- `../coding_practices.md` — Project coding practices.
+- [Deliverable2.md](Deliverable2.md) — Initial single-snapshot exploration and no-code workflow.
+- [Deliverable4.md](Deliverable4.md) — Cleaning decisions associated with the combined Christchurch dataset.
+- [coding_practices.md](../project/coding_practices.md) — Project coding practices.
 
 ## 15. Conclusion
 

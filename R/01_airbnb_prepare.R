@@ -27,15 +27,6 @@ required_columns <- c(
   "longitude"
 )
 
-missing_columns <- setdiff(required_columns, names(airbnb_raw))
-
-if (length(missing_columns) > 0) {
-  stop(
-    "Required columns are missing: ",
-    paste(missing_columns, collapse = ", ")
-  )
-}
-
 # ------------------------------------------------------------
 # 1. Load raw Airbnb data
 # ------------------------------------------------------------
@@ -44,6 +35,15 @@ airbnb_raw <- read_csv(
   input_file,
   show_col_types = FALSE
 )
+
+missing_columns <- setdiff(required_columns, names(airbnb_raw))
+
+if (length(missing_columns) > 0) {
+  stop(
+    "Required columns are missing: ",
+    paste(missing_columns, collapse = ", ")
+  )
+}
 
 # Basic information about the raw dataset
 print(dim(airbnb_raw))

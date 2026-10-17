@@ -193,6 +193,6 @@ References reviewed:
 - John Bryant, *Best Coding Practices (Revisited)*, DATA201/422, 21 September 2026, `09-monday-coding.pdf`. [LEARN resource](https://learn.canterbury.ac.nz/mod/resource/view.php?id=4865993).
 - John Bryant, *Best Coding Practices (Revisited)*, DATA201/422, 22 September 2026, `09-tuesday-coding.pdf`. [LEARN resource](https://learn.canterbury.ac.nz/mod/resource/view.php?id=4867439).
 - [Week 10 Deliverable 6 instructions](https://learn.canterbury.ac.nz/course/section.php?id=448322), checked on LEARN on 23 September 2026.
-- Existing source and preparation decisions in `Week_9_Geographic_Integration.md`, `README_Airbnb_Cleaning_Decisions.md`, `Tenancy_Data_Cleaning_Decisions.md` and `cleaning decisions.Rmd`.
+- Existing source and preparation decisions in [Deliverable 5](Deliverable5.md), [Deliverable 3](Deliverable3.md) and [Deliverable 4](Deliverable4.md).
 
 Acceptance checklist: code review and rationale recorded; cleaning assumptions made executable; repeated-listing weighting corrected; tests and a hand-checkable example supplied; inputs/outputs/steps/strategies documented; AI named; code and document cross-checked. Still outstanding: team review, the price-outlier decision, and lab logistics.

@@ -6,7 +6,7 @@
 | **Course week**           | Week 9, with methodology refinements in Week 10                                                                                     |
 | **Study period**          | October 2025 – June 2026                                                                                                            |
 | **Main scripts**          | `R/05_query_geography.R`, `R/06_integrate_rental_data.R`, `R/07_build_database.R`, `R/08_week9_plots.R`, `R/09_validate_pipeline.R` |
-| **Related documentation** | `Docs/project_documentation.md`, `Docs/coding_practices.md`                                                                         |
+| **Related documentation** | [Project documentation](../project/project_documentation.md), [Coding practices](../project/coding_practices.md)                      |
 
 ## 1. Objective
 

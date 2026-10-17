@@ -237,7 +237,7 @@ The automation also surfaced a data limitation: the tenancy file did not yet con
 
 ### 14.1 Before running
 
-Run the pipeline from the repository root after opening `christchurch_rentalmarket_analysis.Rproj` in RStudio. Confirm that the October 2025–June 2026 Airbnb CSV files and the Tenancy Services CSV are present in `data/raw/`. Restore the project package environment if required. If geographic lookups are not already cached, configure `KOORDINATES_API_KEY` in a local `.Renviron` file and restart RStudio.
+Run the pipeline from the repository root after opening `christchurch_rentalmarket_analysis.Rproj` in RStudio. Confirm that the October 2025–June 2026 Airbnb CSV files and the Tenancy Services CSV are present in `data/raw/`. Restore the project package environment if required. If geographic lookups are not already cached, configure `KOORDINATES_API_KEY` in a local `.Renviron` file and restart RStudio. Leave `AIRBNB_INPUT` unset: use `Sys.unsetenv("AIRBNB_INPUT")` in R or `unset AIRBNB_INPUT` in the terminal; the automated runner rejects this override.
 
 Do not commit `.Renviron`, API keys, raw or processed datasets, caches, or local logs.
 

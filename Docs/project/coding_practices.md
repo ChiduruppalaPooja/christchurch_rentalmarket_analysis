@@ -132,7 +132,7 @@ A passing test shows the code follows the stated rules. It does not show that th
 | `Total ≠ Active + Closed` bonds for most rows | Source values kept as supplied |
 | Row count, column count and reporting-unit uniqueness | Asserted to be unchanged by cleaning |
 
-Results of applying these rules are in [D4](../Reports/D4.md).
+Results of applying these rules are in [D4](../deliverables/Deliverable4.md).
 
 ---
 

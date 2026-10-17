@@ -1,6 +1,6 @@
 # Automation Guide
 
-This guide walks through the automated pipeline: what it does, how to run it, how to check the results, and what each part of the code is responsible for. The results of the verified run are summarised in [D7](../Reports/D7.md).
+This guide walks through the automated pipeline: what it does, how to run it, how to check the results, and what each part of the code is responsible for. The results of the verified run are summarised in [D7](../deliverables/Deliverable7.md).
 
 ---
 
@@ -32,6 +32,7 @@ You need:
 
 - the project open through `christchurch_rentalmarket_analysis.Rproj`;
 - packages restored with `renv::restore()` (once, during setup; see [project_documentation.md](project_documentation.md#3-getting-started-on-a-new-computer));
+- `AIRBNB_INPUT` unset: use `Sys.unsetenv("AIRBNB_INPUT")` in R or `unset AIRBNB_INPUT` in the terminal. The automated runner rejects this override and chooses inputs from its configuration;
 - the October 2025 – June 2026 monthly files (`listings_YYYY_MM.csv`) and the raw tenancy file in `data/raw/`. These are not on GitHub. July and August download automatically if missing; and
 - a Koordinates API key in `.Renviron`, but **only** if there are coordinates that are not already in the lookup cache.
 
@@ -49,7 +50,7 @@ You need:
 
    The result should end in `christchurch_rentalmarket_analysis`.
 
-Do not run `R/10_run_week10.R` for this; it is the earlier D6 runner. Do not prepare July and August by hand in `01_airbnb_prepare.R` either. That script is the earlier single-month exploration and is not part of the automated run.
+Do not run `R/10_run_week10.R` for this; it is the earlier D6 runner. Do not prepare July and August by hand in `01_airbnb_prepare.R` either. That script is the earlier single-month exploration and is not part of the automated run. If running it separately, it needs the June 2026 summary CSV at `data/raw/listings.csv`; copy the provided `data/raw/listings_2026_06.csv` to that name locally, keeping the monthly original.
 
 ---
 

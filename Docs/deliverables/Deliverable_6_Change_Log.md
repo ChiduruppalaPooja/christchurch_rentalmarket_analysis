@@ -2,7 +2,7 @@
 
 Christchurch Rental Market Analysis | DATA201/422 | Updated 27 September 2026
 
-A high-level record of what we changed in each file and why, after reviewing our code against the Week 9 coding-practices lectures. It combines Pooja's changes to the cleaning scripts (01–03) and Sahil's changes to 02 and 05–10. How the pipeline fits together is described in `Week_10_Design_Principles.md`.
+A high-level record of what we changed in each file and why, after reviewing our code against the Week 9 coding-practices lectures. It combines Pooja's changes to the cleaning scripts (01–03) and Sahil's changes to 02 and 05–10. How the pipeline fits together is described in [Deliverable_6_Design_Principles.md](Deliverable_6_Design_Principles.md).
 
 ## Summary by file
 

@@ -1,6 +1,6 @@
 # Project Documentation
 
-This document covers how the project is set up, how to get it running on a new computer, how the pipeline fits together, and how the team manages branches. Results for each deliverable are in the [`Reports/`](../Reports) folder. Coding conventions are in [coding_practices.md](coding_practices.md), and the automated run is explained step by step in [automation_guide.md](automation_guide.md).
+This document covers how the project is set up, how to get it running on a new computer, how the pipeline fits together, and how the team manages branches. Results for each deliverable are in the [`deliverables/`](../deliverables) folder. Coding conventions are in [coding_practices.md](coding_practices.md), and the automated run is explained step by step in [automation_guide.md](automation_guide.md).
 
 ---
 
@@ -61,8 +61,9 @@ christchurch_rentalmarket_analysis/
 │   ├── tables/               summary and validation tables (CSV)
 │   ├── figures/              charts (PNG and PDF)
 │   └── week11/               results of the automated D7 run
-├── Docs/                     project documentation (this folder)
-├── Reports/                  one report per deliverable (D3, D4, D5, D7)
+├── Docs/
+│   ├── project/              project documentation (this folder)
+│   └── deliverables/         deliverable reports and D6 design/change records
 ├── renv/  and  renv.lock     package environment
 ├── .Renviron.example         template for the local API key file
 └── README.md
@@ -96,13 +97,13 @@ The course asked for the large Airbnb datasets to stay off GitHub, so each team 
 4. **Load packages** by running `source("R/00_setup_packages.R")` (see section 4).
 5. **Add the raw data** to `data/raw/`:
    - `listings_2025_10.csv` … `listings_2026_06.csv`: Inside Airbnb New Zealand `listings.csv`, one per month (the July and August 2026 files are downloaded automatically by `run_pipeline.R`);
-   - `listings.csv`: the June 2026 snapshot, used only by the exploratory script `01`;
+   - `listings.csv`: the June 2026 summary snapshot, needed only for optional standalone `R/01_airbnb_prepare.R`; copy the provided `listings_2026_06.csv` to this name locally, keeping the monthly original;
    - `Detailed-Quarterly-Tenancy-Q1-2020-Q3-2026.csv`: the Tenancy Services detailed quarterly report.
 6. **Set up the API key** (only needed when there are coordinates that have not been looked up before):
    - copy `.Renviron.example` to a new file named `.Renviron` in the project root;
    - replace the placeholder with the Koordinates API key (the team shares one key);
    - restart R (**Session > Restart R**).
-7. **Run the pipeline:** `Rscript run_pipeline.R`. See [automation_guide.md](automation_guide.md).
+7. **Run the pipeline:** leave `AIRBNB_INPUT` unset (`Sys.unsetenv("AIRBNB_INPUT")` in R or `unset AIRBNB_INPUT` in the terminal), because the automated runner rejects this override. Run `Rscript run_pipeline.R`. See [automation_guide.md](automation_guide.md).
 
 ### Known setup issues
 
@@ -136,7 +137,7 @@ It only **loads** packages with `library()`. It does not install or update anyth
 
 | Input | Location | Used by |
 |---|---|---|
-| Inside Airbnb monthly `listings.csv` snapshots | `data/raw/listings_YYYY_MM.csv` | `02` (and `01` for the June file) |
+| Inside Airbnb monthly `listings.csv` snapshots | `data/raw/listings_YYYY_MM.csv` | `02`; optional `01` uses a June copy at `data/raw/listings.csv` |
 | Tenancy Services detailed quarterly report | `data/raw/Detailed-Quarterly-Tenancy-Q1-2020-Q3-2026.csv` | `03` |
 | Stats NZ SA2 2019 boundaries | Koordinates layer `98970`, queried through the API | `05` |
 | Local API key | `.Renviron` (only for uncached coordinates) | `05` |
